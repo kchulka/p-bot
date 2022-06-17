@@ -11,7 +11,7 @@ from discord.ui import  Button, View
 import random
 """ ----- TOKEN ----- """
 
-TOKEN = ".."
+TOKEN = "ODU2ODI3MTc4NzM4Mzg0ODk2.G_Xhxo.RsvGVgXn1n_70uhwonkjQujBsm17whQCv_NdqM"
 
 """ ----- BOT & INITIALIZATION ----- """
 
@@ -59,7 +59,7 @@ def randompic():
 
 class randompicView(View):
     def __init__(self):
-        super().__init__(timeout=20)
+        super().__init__(timeout=2)
 
 
     @discord.ui.button(label="regenerate", style=discord.ButtonStyle.blurple, emoji="🥰", disabled=False, custom_id="regen_pick")
@@ -87,7 +87,10 @@ class randompicView(View):
 
 
     async def on_timeout(self):
-        self.disable_all_items()
+        print("timeout")
+        regenbutton = [x for x in self.children if x.custom_id=="regen_pick"][0]
+        regenbutton.disabled = True
+        await self.message.edit(content="", view=self)
 
 
 @bot.command(
