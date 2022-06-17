@@ -6,12 +6,12 @@ from discord import SlashCommandGroup
 from discord.ext import commands
 from discord.ui import  Button, View
 
-import requests
+#import requests
 
 import random
 """ ----- TOKEN ----- """
 
-TOKEN = "ODU2ODI3MTc4NzM4Mzg0ODk2.G5ctnX.oKjVdgpRyRv19NSJM0ABeViCI5UXeQK14-gtw4"
+TOKEN = ".."
 
 """ ----- BOT & INITIALIZATION ----- """
 
@@ -56,61 +56,39 @@ def randompic():
     randompic.set_image(url=url)
     return randompic
 
-def RANDOMPICMAKE():
-    new_button = RANDOMPICBUTTON(label="new picture", style=discord.ButtonStyle.red, emoji="😈", disabled=False)
-    regenerate_button = RANDOMPICBUTTON(label="regenerate", style=discord.ButtonStyle.blurple, emoji="🥰", disabled=False)
-    view = View()
-    view.add_item(regenerate_button)
-    view.add_item(new_button)
-    view.timeout = 15
-    return view
-
-
-class RANDOMPICBUTTON(Button):
-    def __init__(self, label="Undefined", style=discord.ButtonStyle.primary, emoji="👀", disabled=False):
-        super().__init__(
-            label=label,
-            style=style,
-            disabled=disabled,
-            emoji=emoji
-        )
-    async def callback(self, interaction):
-        em = randompic()
-        #vi = RANDOMPICMAKE()
-        if self.label == "regenerate":
-            await interaction.response.edit_message(embed=em, view=vi)
-        elif self.label == "new picture":
-            self.view.clear_items()
-            print(self.view)
-            await interaction.response.edit_message(embed=em, view=vi)
-            self.view.clear_items()
-            await interaction.followup.send_message(embed=em, view=vi)
-            print(interaction.user)
 
 class randompicView(View):
     def __init__(self):
         super().__init__(timeout=20)
 
+
     @discord.ui.button(label="regenerate", style=discord.ButtonStyle.blurple, emoji="🥰", disabled=False, custom_id="regen_pick")
     async def regen_button_callback(self, button, interaction):
+        print(button)
+        button.label = "test"
+        print(button)
         em = randompic()
         vi = randompicView()
+
         await interaction.response.edit_message(embed=em, view=vi)
 
 
     @discord.ui.button(label="new picture", style=discord.ButtonStyle.red, emoji="😈", disabled=False, custom_id="new_pick")
     async def new_button_callback(self, button, interaction):
-
+        print(button)
+        button.disabled = True
+        print(button)
+        regenbutton = [x for x in self.children if x.custom_id=="regen_pick"][0]
+        regenbutton.disabled = True
+        await interaction.response.edit_message(content="", view=self)
         em = randompic()
         vi = randompicView()
-        await interaction.response.send_message(embed=em, view=vi)
+        await interaction.followup.send(embed=em, view=vi)
 
 
     async def on_timeout(self):
         self.disable_all_items()
-        print(self.children)
-        button3 = [x for x in self.children if x.custom_id=="regen_pick"][0]
-        button3.disabled = True
+
 
 @bot.command(
     description="Get a random pic!"
