@@ -1,0 +1,7 @@
+TOKEN: "..."
+reddit_login: # go to https://www.reddit.com/prefs/apps and create an app there
+  client_id: "..."
+  client_secret: "..."
+  username: "..." # username of the creator of the app
+  password: "..." # password of the creator of the app
+  user_agent: "p-bot" # anything could be here
