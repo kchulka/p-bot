@@ -7,3 +7,5 @@ my bot
         pip install asyncpraw
         pip install regex
         pip install requests
+
+rename exemplesettings.yml to settings.yml
