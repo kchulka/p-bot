@@ -457,9 +457,10 @@ class View_fitomklasika(View):
         regenbutton.disabled = True
         await interaction.response.edit_message(content="", view=self)
 
+        self.ctx = await interaction.followup.send(content="loading...")
         em = Embeds.fitom_klasika()
         vi = View_fitomklasika(ctx=self.ctx)
-        self.ctx = await interaction.followup.send(embed=em, view=vi)
+        await self.ctx.edit(content="", embed=em, view=vi)
 
     async def on_timeout(self):
         try:
@@ -472,6 +473,55 @@ class View_fitomklasika(View):
             await self.ctx.edit(content="", view=self)
         except:
             print("message was deleted")
+
+class View_random(View):
+        def __init__(self, ctx):
+            super().__init__(timeout=30)
+            self.ctx = ctx
+
+        @discord.ui.button(label="regenerate", style=discord.ButtonStyle.blurple, emoji="🥰", disabled=False,
+                           custom_id="random_regen")
+        async def random_regen_button_callback(self, button, interaction):
+            x = random.choice(["fitom", "reddit"])
+            if x == "reddit":
+                sub="all"
+                await interaction.response.edit_message(content="loading...")
+                em = await Embeds.reddit(subreddit=sub)
+                vi = View_random(ctx=self.ctx)
+                await self.ctx.edit(content="", embed=em, view=vi)
+            elif x == "fitom":
+                em = Embeds.fitom_klasika()
+                vi = View_random(ctx=self.ctx)
+                await interaction.response.edit_message(embed=em, view=vi)
+
+        @discord.ui.button(label="new picture", style=discord.ButtonStyle.red, emoji="😈", disabled=False,
+                           custom_id="random_new")
+        async def random_new_button_callback(self, button, interaction):
+            button.disabled = True
+            regenbutton = [x for x in self.children if x.custom_id == "random_regen"][0]
+            regenbutton.disabled = True
+            await interaction.response.edit_message(content="", view=self)
+
+            x = random.choice(["fitom", "reddit"])
+            self.ctx = await self.ctx.channel.send(content="loading...")
+            if x == "reddit":
+                sub="all"
+                em = await Embeds.reddit(subreddit=sub)
+                vi = View_random(ctx=self.ctx)
+                await self.ctx.edit(content="", embed=em, view=vi)
+            elif x == "fitom":
+                em = Embeds.fitom_klasika()
+                vi = View_random(ctx=self.ctx)
+                await self.ctx.edit(content="", embed=em, view=vi)
+
+        async def on_timeout(self):
+            try:
+                # print("timeout")
+                self.disable_all_items()
+                # print(self.ctx)
+                #await self.ctx.edit(content="", view=self)
+            except:
+                print("message was deleted")
 
 class View_help(View):
     def __init__(self, ctx):
@@ -509,11 +559,11 @@ async def picrandom(ctx):
             sub="all"
             await ctx.respond(content="loading...")
             em = await Embeds.reddit(subreddit=sub)
-            vi = View_reddit(ctx=ctx, subreddit=sub)
+            vi = View_random(ctx=ctx)
             await ctx.edit(content="", embed=em, view=vi)
         elif x == "fitom":
             em = Embeds.fitom_klasika()
-            vi = View_fitomklasika(ctx)
+            vi = View_random(ctx)
             print(ctx)
             await ctx.respond(embed=em, view=vi)
 
