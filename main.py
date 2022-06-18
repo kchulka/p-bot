@@ -469,7 +469,6 @@ class View_fitomklasika(View):
             regenbutton.disabled = True
             newbutton = [x for x in self.children if x.custom_id == "new_pic"][0]
             newbutton.disabled = True
-            #print(self.ctx)
             await self.ctx.edit(content="", view=self)
         except:
             print("message was deleted")
@@ -516,10 +515,7 @@ class View_random(View):
 
         async def on_timeout(self):
             try:
-                # print("timeout")
                 self.disable_all_items()
-                # print(self.ctx)
-                #await self.ctx.edit(content="", view=self)
             except:
                 print("message was deleted")
 
@@ -535,9 +531,6 @@ class View_help(View):
     async def on_timeout(self):
         try:
             self.clear_items()
-            #xbutton = [x for x in self.children if x.custom_id == "x"][0]
-            #xbutton.disabled = True
-            #print(self.ctx)
             await self.ctx.edit(content="", view=self)
         except:
             print("message was deleted")
@@ -597,6 +590,4 @@ async def help(ctx):
 """ ----- run ----- """
 
 bot.run(TOKEN)
-
-
 
