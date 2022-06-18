@@ -372,6 +372,7 @@ class View_redditcategory(View):
             em = await Embeds.reddit(subreddit=sub)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
             await self.ctx.edit(content="", embed=em, view=vi)
+
     if settings.data.get('subreddits').get("max") >= 14:
         @discord.ui.button(label=settings.data.get('subreddits').get(14).get('button_label'),
                            style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False,
@@ -383,6 +384,7 @@ class View_redditcategory(View):
             em = await Embeds.reddit(subreddit=sub)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
             await self.ctx.edit(content="", embed=em, view=vi)
+
     if settings.data.get('subreddits').get("max") >= 15:
         @discord.ui.button(label=settings.data.get('subreddits').get(15).get('button_label'),
                            style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False,
