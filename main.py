@@ -34,8 +34,6 @@ TOKEN = settings.data.get("TOKEN")
 reddit = asyncpraw.Reddit(
     client_id = settings.data.get("reddit_login").get("client_id"),
     client_secret = settings.data.get("reddit_login").get("client_secret"),
-    username = settings.data.get("reddit_login").get("username"),
-    password = settings.data.get("reddit_login").get("password"),
     user_agent = settings.data.get("reddit_login").get("user_agent")
 )
 
