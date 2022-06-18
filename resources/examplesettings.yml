@@ -1,3 +1,6 @@
+
+# RENAME THIS FILE TO "settings.yml" !!!
+
 TOKEN: "..."
 reddit_login: # go to https://www.reddit.com/prefs/apps and create an app there
   client_id: "..."
@@ -5,3 +8,63 @@ reddit_login: # go to https://www.reddit.com/prefs/apps and create an app there
   username: "..." # username of the creator of the app
   password: "..." # password of the creator of the app
   user_agent: "p-bot" # anything could be here
+
+thumbnails:
+  not-nsfw: "https://i.pinimg.com/originals/c2/ea/1a/c2ea1a0d3e357245661a69cc83ec050a.jpg"
+  other: "https://www.electrokit.com/uploads/productimage/41017/ksr18_3.jpg"
+
+commands:
+  help: "help"
+  random: "pic-random"
+  category: "pic-category"
+
+subreddits:
+  max: 6 #15 is the limit
+  #example:
+  #   button label: "something" -- this is the text visible on the button
+  #   name: "nudes" -- this is the name of the subreddit
+  1:
+    button_label: "NSFW"
+    name: "nsfw"
+  2:
+    button_label: "Nudes"
+    name: "nudes"
+  3:
+    button_label: "Pussy"
+    name: "pussy"
+  4:
+    button_label: "Ass"
+    name: "ass"
+  5:
+    button_label: "Too cute for porn"
+    name: "toocuteforporn"
+  6:
+    button_label: "Fit naked girls"
+    name: "fitnakedgirls"
+  7:
+    button_label: " "
+    name: " "
+  8:
+    button_label: " "
+    name: " "
+  9:
+    button_label: " "
+    name: " "
+  10:
+    button_label: " "
+    name: " "
+  11:
+    button_label: " "
+    name: " "
+  12:
+    button_label: " "
+    name: " "
+  13:
+    button_label: " "
+    name: " "
+  14:
+    button_label: " "
+    name: " "
+  15:
+    button_label: " "
+    name: " "

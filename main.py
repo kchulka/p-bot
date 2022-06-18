@@ -23,9 +23,7 @@ class settings:
     def __init__(self):
         self.file = open('resources/settings.yml', 'r')
         self.data = yaml.load(self.file, Loader=Loader)
-        #print(self.data)
 settings = settings()
-
 
 """ ----- TOKEN ----- """
 
@@ -64,15 +62,42 @@ class Embeds():
             description="I'm sorry, but this command is only allowed in NSWF rooms.",
             color=0xff0000
             )
-        embed.set_thumbnail(url="https://i.pinimg.com/originals/c2/ea/1a/c2ea1a0d3e357245661a69cc83ec050a.jpg")
+        embed.set_thumbnail(url=settings.data.get('thumbnails').get('not-nsfw'))
+        return embed
+
+    def help(slef=None):
+        title = "Help!"
+        description= (
+            f"This is a bot designed to send pornographic pictures of all kinds from multiple sources.\n"
+            f"\n"
+            f"ㅤ**Commands:**\n"
+            f"ㅤㅤㅤ/{settings.data.get('commands').get('help')}\n"
+            f"ㅤㅤㅤ/{settings.data.get('commands').get('random')} 🔞\n"
+            f"ㅤㅤㅤ/{settings.data.get('commands').get('category')} 🔞\n"
+            f"\n"
+            f"ㅤ**Requirements:**\n"
+            f"ㅤㅤㅤ- NSFW room for most commands\n"
+            f"\n"
+            f"ㅤ**Info:**\n"
+            f"ㅤㅤㅤ- [Github repository](https://github.com/kchulka/p-bot)\n"
+            f""
+        )
+        embed = discord.Embed(
+            title=title,
+            description=description,
+            color=0xff0000
+            )
+        embed.set_thumbnail(url=settings.data.get('thumbnails').get('other'))
+        embed.set_footer(text="Bot creator: Kchulka#4766")
         return embed
 
     def fitom_klasika(slef=None):
         embed = discord.Embed(
             title="Enjoy the photo <3",
+            description=f"This photo comes from [Fitom's collection](https://github.com/FitomPlays/klasika) of 800 photos",
             color=0x616161
         )
-        y = random.randint(1, 4)
+        y = random.randint(1, 8)
         if y == 1:
             x = random.randint(1, 100)
         if y == 2:
@@ -87,8 +112,9 @@ class Embeds():
             x = random.randint(501, 600)
         if y == 7:
             x = random.randint(601, 700)
+        if y == 8:
+            x = random.randint(701, 800)
         url = f'https://raw.githubusercontent.com/FitomPlays/klasika/main/{y}/{x}.jpg'
-        #print("Fitom-klasika url:", url)
         embed.set_image(url=url)
         return embed
 
@@ -98,7 +124,7 @@ class Embeds():
             description="You can pick here between Reddit and Fitom-Klasika.",
             color=0x616161
             )
-        embed.set_thumbnail(url="https://www.electrokit.com/uploads/productimage/41017/ksr18_3.jpg")
+        embed.set_thumbnail(url=settings.data.get('thumbnails').get('other'))
         return embed
 
     def timeout_category(slef=None):
@@ -107,7 +133,7 @@ class Embeds():
             description="Please execute the command again!",
             color=0x616161
             )
-        embed.set_thumbnail(url="https://www.electrokit.com/uploads/productimage/41017/ksr18_3.jpg")
+        embed.set_thumbnail(url=settings.data.get('thumbnails').get('other'))
         return embed
 
     def reddit_category(self=None):
@@ -116,13 +142,15 @@ class Embeds():
             description="You can pick here between multiple choices.",
             color=0x616161
             )
-        embed.set_thumbnail(url="https://www.electrokit.com/uploads/productimage/41017/ksr18_3.jpg")
+        embed.set_thumbnail(url=settings.data.get('thumbnails').get('other'))
         return embed
 
     async def reddit(subreddit):
         print(subreddit)
         if subreddit == "all":
-            subreddit = random.choice(["nsfw", "nudes", "toocuteforporn", "pussy", "ass"])
+            max = settings.data.get('subreddits').get("max")
+            subreddit = settings.data.get('subreddits').get(random.randint(1,max)).get('name') #subreddit choise list
+            changed = 1
             print("chosen from all:", subreddit)
         sub = await reddit.subreddit(subreddit)
         all_subs = []
@@ -142,13 +170,21 @@ class Embeds():
             print(matches)
 
         else:
-
-            name = random_sub.title
+            title = random_sub.title
+            description = (f"**Author**: [u/{random_sub.author}](https://www.reddit.com/user/{random_sub.author}) \n"
+                           f"**Upvotes**: {random_sub.score}"
+                           )
+            description += f"\n**subreddit**: {subreddit}"
+            url = f"https://www.reddit.com/r/{subreddit}/comments/{random_sub}/"
             embed = discord.Embed(
-                title=name,
+                title=title,
+                description=description,
+                url=url,
                 color=0x616161
             )
 
+            print("https://www.reddit.com/user/Left_Egg_1626/   \u200B")
+            #embed.add_field(name="Post source info:", value=f"u/{random_sub.author}", inline=True)
             embed.set_image(url=random_sub.url)
 
             return embed
@@ -167,7 +203,6 @@ class View_choosecategory(View):
         em = Embeds.reddit_category()
         vi = View_redditcategory(ctx=self.ctx)
         await interaction.response.edit_message(content="", embed=em, view=vi)
-
 
     @discord.ui.button(label="Fitom-Klasika", style=discord.ButtonStyle.gray, emoji="<:fitom:987691880085073981>", disabled=False, custom_id="fitom_category")
     async def fitom_button_callback(self, button, interaction):
@@ -207,52 +242,161 @@ class View_redditcategory(View):
         vi = View_reddit(ctx=self.ctx, subreddit=sub)
         await self.ctx.edit(content="", embed=em, view=vi)
 
+    if settings.data.get('subreddits').get("max") >= 1:
+        @discord.ui.button(label=settings.data.get('subreddits').get(1).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_1_{settings.data.get('subreddits').get(1).get('name')}")
+        async def n1_button_callback(self, button, interaction):
+            await interaction.response.edit_message(content=" ", delete_after=0.1)
+            sub=settings.data.get('subreddits').get(1).get('name')
+            self.ctx = await self.ctx.channel.send(content="loading...")
+            em = await Embeds.reddit(subreddit=sub)
+            vi = View_reddit(ctx=self.ctx, subreddit=sub)
+            await self.ctx.edit(content="", embed=em, view=vi)
 
-    @discord.ui.button(label="NSFW", style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id="reddit_c_nsfw")
-    async def nsfw_button_callback(self, button, interaction):
-        await interaction.response.edit_message(content=" ", delete_after=0.1)
-        sub="nsfw"
-        self.ctx = await self.ctx.channel.send(content="loading...")
-        em = await Embeds.reddit(subreddit=sub)
-        vi = View_reddit(ctx=self.ctx, subreddit=sub)
-        await self.ctx.edit(content="", embed=em, view=vi)
+    if settings.data.get('subreddits').get("max") >= 2:
+        @discord.ui.button(label=settings.data.get('subreddits').get(2).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_2_{settings.data.get('subreddits').get(2).get('name')}")
+        async def n2_button_callback(self, button, interaction):
+            await interaction.response.edit_message(content=" ", delete_after=0.1)
+            sub=settings.data.get('subreddits').get(2).get('name')
+            self.ctx = await self.ctx.channel.send(content="loading...")
+            em = await Embeds.reddit(subreddit=sub)
+            vi = View_reddit(ctx=self.ctx, subreddit=sub)
+            await self.ctx.edit(content="", embed=em, view=vi)
+
+    if settings.data.get('subreddits').get("max") >= 3:
+        @discord.ui.button(label=settings.data.get('subreddits').get(3).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_3_{settings.data.get('subreddits').get(3).get('name')}")
+        async def n3_button_callback(self, button, interaction):
+            await interaction.response.edit_message(content=" ", delete_after=0.1)
+            sub=settings.data.get('subreddits').get(3).get('name')
+            self.ctx = await self.ctx.channel.send(content="loading...")
+            em = await Embeds.reddit(subreddit=sub)
+            vi = View_reddit(ctx=self.ctx, subreddit=sub)
+            await self.ctx.edit(content="", embed=em, view=vi)
+
+    if settings.data.get('subreddits').get("max") >= 4:
+        @discord.ui.button(label=settings.data.get('subreddits').get(4).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_4_{settings.data.get('subreddits').get(4).get('name')}")
+        async def n4_button_callback(self, button, interaction):
+            await interaction.response.edit_message(content=" ", delete_after=0.1)
+            sub=settings.data.get('subreddits').get(4).get('name')
+            self.ctx = await self.ctx.channel.send(content="loading...")
+            em = await Embeds.reddit(subreddit=sub)
+            vi = View_reddit(ctx=self.ctx, subreddit=sub)
+            await self.ctx.edit(content="", embed=em, view=vi)
+
+    if settings.data.get('subreddits').get("max") >= 5:
+        @discord.ui.button(label=settings.data.get('subreddits').get(5).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_5_{settings.data.get('subreddits').get(5).get('name')}")
+        async def n5_button_callback(self, button, interaction):
+            await interaction.response.edit_message(content=" ", delete_after=0.1)
+            sub=settings.data.get('subreddits').get(5).get('name')
+            self.ctx = await self.ctx.channel.send(content="loading...")
+            em = await Embeds.reddit(subreddit=sub)
+            vi = View_reddit(ctx=self.ctx, subreddit=sub)
+            await self.ctx.edit(content="", embed=em, view=vi)
+
+    if settings.data.get('subreddits').get("max") >= 6:
+        @discord.ui.button(label=settings.data.get('subreddits').get(6).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_6_{settings.data.get('subreddits').get(6).get('name')}")
+        async def n6_button_callback(self, button, interaction):
+            await interaction.response.edit_message(content=" ", delete_after=0.1)
+            sub=settings.data.get('subreddits').get(6).get('name')
+            self.ctx = await self.ctx.channel.send(content="loading...")
+            em = await Embeds.reddit(subreddit=sub)
+            vi = View_reddit(ctx=self.ctx, subreddit=sub)
+            await self.ctx.edit(content="", embed=em, view=vi)
+
+    if settings.data.get('subreddits').get("max") >= 7:
+        @discord.ui.button(label=settings.data.get('subreddits').get(7).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_7_{settings.data.get('subreddits').get(7).get('name')}")
+        async def n7_button_callback(self, button, interaction):
+            await interaction.response.edit_message(content=" ", delete_after=0.1)
+            sub=settings.data.get('subreddits').get(7).get('name')
+            self.ctx = await self.ctx.channel.send(content="loading...")
+            em = await Embeds.reddit(subreddit=sub)
+            vi = View_reddit(ctx=self.ctx, subreddit=sub)
+            await self.ctx.edit(content="", embed=em, view=vi)
+
+    if settings.data.get('subreddits').get("max") >= 8:
+        @discord.ui.button(label=settings.data.get('subreddits').get(8).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_8_{settings.data.get('subreddits').get(8).get('name')}")
+        async def n8_button_callback(self, button, interaction):
+            await interaction.response.edit_message(content=" ", delete_after=0.1)
+            sub=settings.data.get('subreddits').get(8).get('name')
+            self.ctx = await self.ctx.channel.send(content="loading...")
+            em = await Embeds.reddit(subreddit=sub)
+            vi = View_reddit(ctx=self.ctx, subreddit=sub)
+            await self.ctx.edit(content="", embed=em, view=vi)
+
+    if settings.data.get('subreddits').get("max") >= 9:
+        @discord.ui.button(label=settings.data.get('subreddits').get(9).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_9_{settings.data.get('subreddits').get(9).get('name')}")
+        async def n9_button_callback(self, button, interaction):
+            await interaction.response.edit_message(content=" ", delete_after=0.1)
+            sub=settings.data.get('subreddits').get(9).get('name')
+            self.ctx = await self.ctx.channel.send(content="loading...")
+            em = await Embeds.reddit(subreddit=sub)
+            vi = View_reddit(ctx=self.ctx, subreddit=sub)
+            await self.ctx.edit(content="", embed=em, view=vi)
 
 
-    @discord.ui.button(label="Nudes", style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id="reddit_c_Nudes")
-    async def nudes_button_callback(self, button, interaction):
-        await interaction.response.edit_message(content=" ", delete_after=0.1)
-        sub="nudes"
-        self.ctx = await self.ctx.channel.send(content="loading...")
-        em = await Embeds.reddit(subreddit=sub)
-        vi = View_reddit(ctx=self.ctx, subreddit=sub)
-        await self.ctx.edit(content="", embed=em, view=vi)
+    if settings.data.get('subreddits').get("max") >= 10:
+        @discord.ui.button(label=settings.data.get('subreddits').get(10).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_10_{settings.data.get('subreddits').get(10).get('name')}")
+        async def n10_button_callback(self, button, interaction):
+            await interaction.response.edit_message(content=" ", delete_after=0.1)
+            sub = settings.data.get('subreddits').get(10).get('name')
+            self.ctx = await self.ctx.channel.send(content="loading...")
+            em = await Embeds.reddit(subreddit=sub)
+            vi = View_reddit(ctx=self.ctx, subreddit=sub)
+            await self.ctx.edit(content="", embed=em, view=vi)
 
-    @discord.ui.button(label="Pussy", style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id="reddit_c_pussy")
-    async def pussy_button_callback(self, button, interaction):
-        await interaction.response.edit_message(content=" ", delete_after=0.1)
-        sub="pussy"
-        self.ctx = await self.ctx.channel.send(content="loading...")
-        em = await Embeds.reddit(subreddit=sub)
-        vi = View_reddit(ctx=self.ctx, subreddit=sub)
-        await self.ctx.edit(content="", embed=em, view=vi)
+    if settings.data.get('subreddits').get("max") >= 11:
+        @discord.ui.button(label=settings.data.get('subreddits').get(11).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_11_{settings.data.get('subreddits').get(11).get('name')}")
+        async def n11_button_callback(self, button, interaction):
+            await interaction.response.edit_message(content=" ", delete_after=0.1)
+            sub = settings.data.get('subreddits').get(11).get('name')
+            self.ctx = await self.ctx.channel.send(content="loading...")
+            em = await Embeds.reddit(subreddit=sub)
+            vi = View_reddit(ctx=self.ctx, subreddit=sub)
+            await self.ctx.edit(content="", embed=em, view=vi)
 
-    @discord.ui.button(label="Ass", style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id="reddit_c_ass")
-    async def ass_button_callback(self, button, interaction):
-        await interaction.response.edit_message(content=" ", delete_after=0.1)
-        sub="ass"
-        self.ctx = await self.ctx.channel.send(content="loading...")
-        em = await Embeds.reddit(subreddit=sub)
-        vi = View_reddit(ctx=self.ctx, subreddit=sub)
-        await self.ctx.edit(content="", embed=em, view=vi)
+    if settings.data.get('subreddits').get("max") >= 12:
+        @discord.ui.button(label=settings.data.get('subreddits').get(12).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_12_{settings.data.get('subreddits').get(12).get('name')}")
+        async def n12_button_callback(self, button, interaction):
+            await interaction.response.edit_message(content=" ", delete_after=0.1)
+            sub = settings.data.get('subreddits').get(12).get('name')
+            self.ctx = await self.ctx.channel.send(content="loading...")
+            em = await Embeds.reddit(subreddit=sub)
+            vi = View_reddit(ctx=self.ctx, subreddit=sub)
+            await self.ctx.edit(content="", embed=em, view=vi)
 
-    @discord.ui.button(label="Too cute for porn", style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id="reddit_c_tcfp")
-    async def tcfp_button_callback(self, button, interaction):
-        await interaction.response.edit_message(content=" ", delete_after=0.1)
-        sub="toocuteforporn"
-        self.ctx = await self.ctx.channel.send(content="loading...")
-        em = await Embeds.reddit(subreddit=sub)
-        vi = View_reddit(ctx=self.ctx, subreddit=sub)
-        await self.ctx.edit(content="", embed=em, view=vi)
+    if settings.data.get('subreddits').get("max") >= 13:
+        @discord.ui.button(label=settings.data.get('subreddits').get(13).get('button_label'),
+                           style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False,
+                           custom_id=f"reddit_13_{settings.data.get('subreddits').get(13).get('name')}")
+        async def n13_button_callback(self, button, interaction):
+            await interaction.response.edit_message(content=" ", delete_after=0.1)
+            sub = settings.data.get('subreddits').get(13).get('name')
+            self.ctx = await self.ctx.channel.send(content="loading...")
+            em = await Embeds.reddit(subreddit=sub)
+            vi = View_reddit(ctx=self.ctx, subreddit=sub)
+            await self.ctx.edit(content="", embed=em, view=vi)
+    if settings.data.get('subreddits').get("max") >= 14:
+        @discord.ui.button(label=settings.data.get('subreddits').get(14).get('button_label'),
+                           style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False,
+                           custom_id=f"reddit_14_{settings.data.get('subreddits').get(14).get('name')}")
+        async def n14_button_callback(self, button, interaction):
+            await interaction.response.edit_message(content=" ", delete_after=0.1)
+            sub = settings.data.get('subreddits').get(14).get('name')
+            self.ctx = await self.ctx.channel.send(content="loading...")
+            em = await Embeds.reddit(subreddit=sub)
+            vi = View_reddit(ctx=self.ctx, subreddit=sub)
+            await self.ctx.edit(content="", embed=em, view=vi)
+    if settings.data.get('subreddits').get("max") >= 15:
+        @discord.ui.button(label=settings.data.get('subreddits').get(15).get('button_label'),
+                           style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False,
+                           custom_id=f"reddit_15_{settings.data.get('subreddits').get(15).get('name')}")
+        async def n15_button_callback(self, button, interaction):
+            await interaction.response.edit_message(content=" ", delete_after=0.1)
+            sub = settings.data.get('subreddits').get(15).get('name')
+            self.ctx = await self.ctx.channel.send(content="loading...")
+            em = await Embeds.reddit(subreddit=sub)
+            vi = View_reddit(ctx=self.ctx, subreddit=sub)
+            await self.ctx.edit(content="", embed=em, view=vi)
+
 
 class View_reddit(View):
     def __init__(self, ctx, subreddit):
@@ -329,27 +473,56 @@ class View_fitomklasika(View):
         except:
             print("message was deleted")
 
+class View_help(View):
+    def __init__(self, ctx):
+        super().__init__(timeout=60)
+        self.ctx = ctx
+
+    @discord.ui.button(style=discord.ButtonStyle.gray, emoji="❌", disabled=False, custom_id="x")
+    async def regen_button_callback(self, button, interaction):
+        await interaction.response.edit_message(content=" ", delete_after=0.1)
+
+    async def on_timeout(self):
+        try:
+            self.clear_items()
+            #xbutton = [x for x in self.children if x.custom_id == "x"][0]
+            #xbutton.disabled = True
+            #print(self.ctx)
+            await self.ctx.edit(content="", view=self)
+        except:
+            print("message was deleted")
+
 """ ----- COMMANDS ----- """
 
 @bot.command(
-    name="pic-random",
+    name=settings.data.get('commands').get('random'),
     description="Get a random pic from all categories!"
 )
 async def picrandom(ctx):
+    print(ctx.author)
     if ctx.channel.is_nsfw() == False:
         em = Embeds.notnswfchannel()
         await ctx.respond(embed=em, delete_after=10)
     else:
-        em = Embeds.fitom_klasika()
-        vi = View_fitomklasika(ctx)
-        print(ctx)
-        await ctx.respond(embed=em, view=vi)
+        x = random.choice(["fitom", "reddit"])
+        if x == "reddit":
+            sub="all"
+            await ctx.respond(content="loading...")
+            em = await Embeds.reddit(subreddit=sub)
+            vi = View_reddit(ctx=ctx, subreddit=sub)
+            await ctx.edit(content="", embed=em, view=vi)
+        elif x == "fitom":
+            em = Embeds.fitom_klasika()
+            vi = View_fitomklasika(ctx)
+            print(ctx)
+            await ctx.respond(embed=em, view=vi)
 
 @bot.command(
-    name="pic-category",
+    name=settings.data.get('commands').get('category'),
     description="Get a random pic from a category chosen by you!"
 )
 async def piccategory(ctx):
+    print(ctx.author)
     if ctx.channel.is_nsfw() == False:
         em = Embeds.notnswfchannel()
         await ctx.respond(embed=em, delete_after=10)
@@ -360,15 +533,16 @@ async def piccategory(ctx):
 
         await ctx.respond(content="", embed=em, view=vi)
 
+
 @bot.command(
-    name="help",
+    name=settings.data.get('commands').get('help'),
     description="Get some help!"
 )
 async def help(ctx):
-    em = Embeds.notnswfchannel()
-    vi = View_fitomklasika(ctx)
-    print(ctx)
-    await ctx.respond(content="help")
+    em = Embeds.help()
+    vi = View_help(ctx)
+    #print(ctx)
+    await ctx.respond(content="", embed=em, view=vi)
 
 """ ----- run ----- """
 
