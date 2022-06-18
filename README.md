@@ -9,3 +9,5 @@ my bot
         pip install requests
 
 rename exemplesettings.yml to settings.yml
+
+https://discord.com/api/oauth2/authorize?client_id=856827178738384896&permissions=8&scope=bot%20applications.commands
