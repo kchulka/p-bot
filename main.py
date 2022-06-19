@@ -489,7 +489,7 @@ class View_fitomklasika(View):
 
 class View_random(View):
         def __init__(self, ctx):
-            super().__init__(timeout=3)
+            super().__init__(timeout=settings.data.get('commands').get('default-timeout'))
             self.ctx = ctx
 
         @discord.ui.button(label="regenerate", style=discord.ButtonStyle.blurple, emoji="🥰", disabled=False,
