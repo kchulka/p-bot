@@ -12,9 +12,9 @@ thumbnails:
   other: "https://www.electrokit.com/uploads/productimage/41017/ksr18_3.jpg"
 
 commands:
-  default-timeout: 30
+  default-timeout: 30 # in seconds
   help: "help"
-  help-timeout: 90
+  help-timeout: 90 # in seconds
   random: "pic-random"
   category: "pic-category"
 
