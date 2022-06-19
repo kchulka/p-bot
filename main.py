@@ -25,6 +25,10 @@ class settings:
         self.data = yaml.load(self.file, Loader=Loader)
 settings = settings()
 
+debug = settings.data.get("debug-mode")
+if debug >= 1:
+    print("debug mode activated \n")
+
 """ ----- TOKEN ----- """
 
 TOKEN = settings.data.get("TOKEN")
@@ -48,7 +52,11 @@ bot = discord.Bot(
 @bot.event
 async def on_ready():
     print(f"Bot has been logged in as {bot.user} \n"
-          f"____________________________________")
+          f"____________________________________\n")
+    await statuschange()
+
+async def statuschange():
+    await bot.change_presence(activity=discord.Game(name=f"/{settings.data.get('commands').get('help')}"))
 
 """ ----- embeds ----- """
 
@@ -144,12 +152,14 @@ class Embeds():
         return embed
 
     async def reddit(subreddit):
-        print(subreddit)
+        if debug >= 1:
+            print(f" chosen subreddit: {subreddit} ")
+
         if subreddit == "all":
             max = settings.data.get('subreddits').get("max")
             subreddit = settings.data.get('subreddits').get(random.randint(1,max)).get('name') #subreddit choise list
-            changed = 1
-            print("chosen from all:", subreddit)
+            if debug >= 1:
+                print(f" chosen subreddit: {subreddit} ")
         sub = await reddit.subreddit(subreddit)
         all_subs = []
         top = sub.hot(limit=100)
@@ -161,11 +171,13 @@ class Embeds():
 
         check = r"(?:http\:|https\:)?\/\/.*\.(?:png|jpg)"
         matches = re.search(check, random_sub.url, re.IGNORECASE)
-        print(matches)
+        if debug >= 1:
+            print(f" random subreddit match: {matches} ")
         while matches == None:
             random_sub = random.choice(all_subs)
             matches = re.search(check, random_sub.url, re.IGNORECASE)
-            print(matches)
+            if debug >= 1:
+                print(f" random subreddit match: {matches} ")
 
         else:
             title = random_sub.title
@@ -180,11 +192,9 @@ class Embeds():
                 url=url,
                 color=0x616161
             )
-
-            print("https://www.reddit.com/user/Left_Egg_1626/   \u200B")
-            #embed.add_field(name="Post source info:", value=f"u/{random_sub.author}", inline=True)
             embed.set_image(url=random_sub.url)
-
+            if debug >= 2:
+                print(f" embed created: {embed} ")
             return embed
 
 
@@ -194,10 +204,11 @@ class View_choosecategory(View):
     def __init__(self, ctx):
         super().__init__(timeout=30)
         self.ctx = ctx
-
+        self.responded = False
     @discord.ui.button(label="Reddit", style=discord.ButtonStyle.gray, emoji="<:reddit:987690510481231942>", disabled=False, custom_id="reddit_category")
     async def reddit_button_callback(self, button, interaction):
-        print(self.ctx)
+        if debug >= 1:
+            print(f" message info: {self.ctx} ")
         em = Embeds.reddit_category()
         vi = View_redditcategory(ctx=self.ctx)
         await interaction.response.edit_message(content="", embed=em, view=vi)
@@ -205,31 +216,31 @@ class View_choosecategory(View):
     @discord.ui.button(label="Fitom-Klasika", style=discord.ButtonStyle.gray, emoji="<:fitom:987691880085073981>", disabled=False, custom_id="fitom_category")
     async def fitom_button_callback(self, button, interaction):
         await interaction.response.edit_message(content=" ", delete_after=0.1)
-
-        self.ctx = await self.ctx.channel.send(content="loading...")
+        self.responded = True
+        self.ctx = await interaction.followup.send(content="loading...")
         em = Embeds.fitom_klasika()
         vi = View_fitomklasika(ctx=self.ctx)
         await self.ctx.edit(content="", embed=em, view=vi)
 
     async def on_timeout(self):
-        #print("timeout")
-        try:
-            em = Embeds.timeout_category()
-            redditbutton = [x for x in self.children if x.custom_id == "reddit_category"][0]
-            redditbutton.disabled = True
-            fitombutton = [x for x in self.children if x.custom_id == "fitom_category"][0]
-            fitombutton.disabled = True
-            # print(self.ctx)
-            await self.ctx.edit(content="", embed=em, view=self)
-        except:
-            print("message was deleted")
-
+        if debug >= 2:
+            print(f" choosing category has timed out. ")
+        if self.responded == False:
+            try:
+                em = Embeds.timeout_category()
+                redditbutton = [x for x in self.children if x.custom_id == "reddit_category"][0]
+                redditbutton.disabled = True
+                fitombutton = [x for x in self.children if x.custom_id == "fitom_category"][0]
+                fitombutton.disabled = True
+                await self.ctx.edit(content="", embed=em, view=self)
+            except:
+                if debug >= 2:
+                    print(f" message was deleted before timeout ")
 
 class View_redditcategory(View):
     def __init__(self, ctx):
         super().__init__(timeout=30)
         self.ctx = ctx
-
 
     @discord.ui.button(label="All", style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id="reddit_c_all")
     async def all_button_callback(self, button, interaction):
@@ -427,15 +438,16 @@ class View_reddit(View):
 
     async def on_timeout(self):
         try:
-            #print("timeout")
+            if debug >= 2:
+                print(f" Reddit has timed out. ")
             regenbutton = [x for x in self.children if x.custom_id == "reddit_regen"][0]
             regenbutton.disabled = True
             newbutton = [x for x in self.children if x.custom_id == "reddit_new"][0]
             newbutton.disabled = True
-            #print(self.ctx)
             await self.ctx.edit(content="", view=self)
         except:
-            print("message was deleted")
+            if debug >= 2:
+                print(f" message was deleted before timeout ")
 
 class View_fitomklasika(View):
     def __init__(self, ctx):
@@ -464,14 +476,16 @@ class View_fitomklasika(View):
 
     async def on_timeout(self):
         try:
-            #print("timeout")
+            if debug >= 2:
+                print(f" Fitom-Klasika has timed out. ")
             regenbutton = [x for x in self.children if x.custom_id == "regen_pic"][0]
             regenbutton.disabled = True
             newbutton = [x for x in self.children if x.custom_id == "new_pic"][0]
             newbutton.disabled = True
             await self.ctx.edit(content="", view=self)
         except:
-            print("message was deleted")
+            if debug >= 2:
+                print(f" message was deleted before timeout ")
 
 class View_random(View):
         def __init__(self, ctx):
@@ -515,9 +529,12 @@ class View_random(View):
 
         async def on_timeout(self):
             try:
+                if debug >= 2:
+                    print(f" random has timed out ")
                 self.disable_all_items()
             except:
-                print("message was deleted")
+                if debug >= 2:
+                    print(f" message was deleted before timeout ")
 
 class View_help(View):
     def __init__(self, ctx):
@@ -533,7 +550,8 @@ class View_help(View):
             self.clear_items()
             await self.ctx.edit(content="", view=self)
         except:
-            print("message was deleted")
+            if debug >= 2:
+                print(f" message was deleted before timeout ")
 
 """ ----- COMMANDS ----- """
 
@@ -542,12 +560,15 @@ class View_help(View):
     description="Get a random pic from all categories!"
 )
 async def picrandom(ctx):
-    print(ctx.author)
+    if debug >= 1:
+        print(f"random picture executed by: {ctx.author} ")
     if ctx.channel.is_nsfw() == False:
         em = Embeds.notnswfchannel()
         await ctx.respond(embed=em, delete_after=10)
     else:
         x = random.choice(["fitom", "reddit"])
+        if debug >= 3:
+            print(f"random picture: {x} ")
         if x == "reddit":
             sub="all"
             await ctx.respond(content="loading...")
@@ -557,7 +578,6 @@ async def picrandom(ctx):
         elif x == "fitom":
             em = Embeds.fitom_klasika()
             vi = View_random(ctx)
-            print(ctx)
             await ctx.respond(embed=em, view=vi)
 
 @bot.command(
@@ -565,7 +585,8 @@ async def picrandom(ctx):
     description="Get a random pic from a category chosen by you!"
 )
 async def piccategory(ctx):
-    print(ctx.author)
+    if debug >= 1:
+        print(f"category picture executed by: {ctx.author} ")
     if ctx.channel.is_nsfw() == False:
         em = Embeds.notnswfchannel()
         await ctx.respond(embed=em, delete_after=10)
@@ -584,7 +605,6 @@ async def piccategory(ctx):
 async def help(ctx):
     em = Embeds.help()
     vi = View_help(ctx)
-    #print(ctx)
     await ctx.respond(content="", embed=em, view=vi)
 
 """ ----- run ----- """
