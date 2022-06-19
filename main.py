@@ -202,7 +202,7 @@ class Embeds():
 
 class View_choosecategory(View):
     def __init__(self, ctx):
-        super().__init__(timeout=30)
+        super().__init__(timeout=settings.data.get('commands').get('default-timeout'))
         self.ctx = ctx
         self.responded = False
     @discord.ui.button(label="Reddit", style=discord.ButtonStyle.gray, emoji="<:reddit:987690510481231942>", disabled=False, custom_id="reddit_category")
@@ -239,7 +239,7 @@ class View_choosecategory(View):
 
 class View_redditcategory(View):
     def __init__(self, ctx):
-        super().__init__(timeout=30)
+        super().__init__(timeout=settings.data.get('commands').get('default-timeout'))
         self.ctx = ctx
 
     @discord.ui.button(label="All", style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id="reddit_c_all")
@@ -411,7 +411,7 @@ class View_redditcategory(View):
 
 class View_reddit(View):
     def __init__(self, ctx, subreddit):
-        super().__init__(timeout=30)
+        super().__init__(timeout=settings.data.get('commands').get('default-timeout'))
         self.ctx = ctx
         self.sub = subreddit
 
@@ -451,7 +451,7 @@ class View_reddit(View):
 
 class View_fitomklasika(View):
     def __init__(self, ctx):
-        super().__init__(timeout=30)
+        super().__init__(timeout=settings.data.get('commands').get('default-timeout'))
         self.ctx = ctx
 
     @discord.ui.button(label="regenerate", style=discord.ButtonStyle.blurple, emoji="🥰", disabled=False, custom_id="regen_pic")
@@ -489,7 +489,7 @@ class View_fitomklasika(View):
 
 class View_random(View):
         def __init__(self, ctx):
-            super().__init__(timeout=30)
+            super().__init__(timeout=3)
             self.ctx = ctx
 
         @discord.ui.button(label="regenerate", style=discord.ButtonStyle.blurple, emoji="🥰", disabled=False,
@@ -529,16 +529,17 @@ class View_random(View):
 
         async def on_timeout(self):
             try:
+                self.disable_all_items()
+                await self.ctx.edit(content="", view=self)
                 if debug >= 2:
                     print(f" random has timed out ")
-                self.disable_all_items()
             except:
                 if debug >= 2:
                     print(f" message was deleted before timeout ")
 
 class View_help(View):
     def __init__(self, ctx):
-        super().__init__(timeout=60)
+        super().__init__(timeout=settings.data.get('commands').get('help-timeout'))
         self.ctx = ctx
 
     @discord.ui.button(style=discord.ButtonStyle.gray, emoji="❌", disabled=False, custom_id="x")
