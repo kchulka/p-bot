@@ -8,7 +8,7 @@ from discord import SlashCommandGroup
 from discord.ext import commands
 from discord.ui import Button, View
 
-import asyncpraw
+#import asyncpraw
 import praw
 
 import random
@@ -18,7 +18,7 @@ import re
 import yaml
 from yaml import Loader
 
-import asyncio
+#import asyncio
 
 """ ----- settings stuff ----- """
 
