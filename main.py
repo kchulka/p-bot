@@ -9,6 +9,7 @@ from discord.ext import commands
 from discord.ui import Button, View
 
 import asyncpraw
+import praw
 
 import random
 
@@ -16,6 +17,8 @@ import re
 
 import yaml
 from yaml import Loader
+
+import asyncio
 
 """ ----- settings stuff ----- """
 
@@ -35,11 +38,58 @@ TOKEN = settings.data.get("TOKEN")
 
 """ ----- reddet ----- """
 
-reddit = asyncpraw.Reddit(
+reddit = praw.Reddit(
     client_id = settings.data.get("reddit_login").get("client_id"),
     client_secret = settings.data.get("reddit_login").get("client_secret"),
     user_agent = settings.data.get("reddit_login").get("user_agent")
 )
+
+""" ----- reddit save stuff ----- """
+
+class saved_reddit:
+    def __init__(self, saved_reddit):
+        self.file = open(f'resources/reddit_saved_{saved_reddit}.yml', 'r')
+        self.data = yaml.load(self.file, Loader=Loader)
+
+def save_from_reddit():
+    for max_subreddits in range (1, 1+settings.data.get('subreddits').get("max")):
+        if debug >= 1:
+            print(f" creating file for subreddit num: {max_subreddits} ")
+
+        subreddit = settings.data.get('subreddits').get(max_subreddits).get('name')
+
+        sub = reddit.subreddit(subreddit)
+        all_subs = []
+        hot = sub.hot(limit=settings.data.get('subreddits').get("max_posts"))
+
+        quantity = 0
+        dict_ = {}
+
+        for submission in hot:
+
+            check = r"(?:http\:|https\:)?\/\/.*\.(?:png|jpg)"
+            matches = re.search(check, submission.url, re.IGNORECASE)
+
+            if debug >= 2:
+                print(f" random subreddit match: {matches} ")
+            if matches != None:
+                quantity += 1
+                dict1 = {quantity: {'id': f'{submission}', 'url': f'{submission.url}', 'title': f'{submission.title}', 'author': f'{submission.author}', 'score': submission.score}}
+                if debug >= 2:
+                    print(f" submission: {submission} ")
+                dict_.update(dict1)
+            else:
+                if debug >= 2:
+                    print(f" random subreddit match: {matches} ")
+
+        dict2 = {"quantity": quantity}
+        dict_.update(dict2)
+        if debug >= 1:
+            print(f"  submissions from sub {max_subreddits} that went thru: {quantity}")
+        with open(f'resources/reddit_saved_{max_subreddits}.yml', 'w') as yaml_file:
+            yaml.dump(dict_, yaml_file, default_flow_style=False)
+
+save_from_reddit()
 
 """ ----- BOT & INITIALIZATION ----- """
 
@@ -151,7 +201,7 @@ class Embeds():
         embed.set_thumbnail(url=settings.data.get('thumbnails').get('other'))
         return embed
 
-    async def reddit(subreddit):
+    async def reddit_old(subreddit):
         if debug >= 1:
             print(f" chosen subreddit: {subreddit} ")
 
@@ -160,6 +210,7 @@ class Embeds():
             subreddit = settings.data.get('subreddits').get(random.randint(1,max)).get('name') #subreddit choise list
             if debug >= 1:
                 print(f" chosen subreddit: {subreddit} ")
+
         sub = await reddit.subreddit(subreddit)
         all_subs = []
         top = sub.hot(limit=100)
@@ -197,6 +248,43 @@ class Embeds():
                 print(f" embed created: {embed} ")
             return embed
 
+    async def reddit(subreddit):
+        if debug >= 1:
+            print(f" chosen subreddit: {subreddit} ")
+
+        if subreddit == "all":
+            subreddit = random.randint(1, settings.data.get('subreddits').get('max'))
+            if debug >= 1:
+                print(f" chosen subreddit: {subreddit} ")
+
+        saved_subreddit = saved_reddit(saved_reddit=subreddit)
+
+        random_sub = random.randint(1, saved_subreddit.data.get("quantity"))
+        if debug >= 1:
+            print(f"saved_subreddit.data.get(quantity) : {saved_subreddit.data.get('quantity')}")
+            print(f"selected submission : {random_sub}")
+
+        title = saved_subreddit.data.get(random_sub).get("title")
+        author = saved_subreddit.data.get(random_sub).get("author")
+        score = saved_subreddit.data.get(random_sub).get("score")
+        url = saved_subreddit.data.get(random_sub).get("url")
+        id = saved_subreddit.data.get(random_sub).get("id")
+
+        description = (f"**Author**: [u/{author}](https://www.reddit.com/user/{author}) \n"
+                           f"**Upvotes**: {score}"
+                        )
+        description += f"\n**subreddit**: r/{settings.data.get('subreddits').get(subreddit).get('name')}"
+        post_url = f"https://www.reddit.com/r/{settings.data.get('subreddits').get(subreddit).get('name')}/comments/{id}/"
+        embed = discord.Embed(
+                title=title,
+                description=description,
+                url=post_url,
+                color=0x616161
+                )
+        embed.set_image(url=url)
+        if debug >= 2:
+            print(f" embed created: {embed} ")
+        return embed
 
 """ ----- CATEGORIES / Views ----- """
 
@@ -255,7 +343,7 @@ class View_redditcategory(View):
         @discord.ui.button(label=settings.data.get('subreddits').get(1).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_1_{settings.data.get('subreddits').get(1).get('name')}")
         async def n1_button_callback(self, button, interaction):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
-            sub=settings.data.get('subreddits').get(1).get('name')
+            sub=1
             self.ctx = await self.ctx.channel.send(content="loading...")
             em = await Embeds.reddit(subreddit=sub)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
@@ -265,7 +353,7 @@ class View_redditcategory(View):
         @discord.ui.button(label=settings.data.get('subreddits').get(2).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_2_{settings.data.get('subreddits').get(2).get('name')}")
         async def n2_button_callback(self, button, interaction):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
-            sub=settings.data.get('subreddits').get(2).get('name')
+            sub=2
             self.ctx = await self.ctx.channel.send(content="loading...")
             em = await Embeds.reddit(subreddit=sub)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
@@ -275,7 +363,7 @@ class View_redditcategory(View):
         @discord.ui.button(label=settings.data.get('subreddits').get(3).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_3_{settings.data.get('subreddits').get(3).get('name')}")
         async def n3_button_callback(self, button, interaction):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
-            sub=settings.data.get('subreddits').get(3).get('name')
+            sub=3
             self.ctx = await self.ctx.channel.send(content="loading...")
             em = await Embeds.reddit(subreddit=sub)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
@@ -285,7 +373,7 @@ class View_redditcategory(View):
         @discord.ui.button(label=settings.data.get('subreddits').get(4).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_4_{settings.data.get('subreddits').get(4).get('name')}")
         async def n4_button_callback(self, button, interaction):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
-            sub=settings.data.get('subreddits').get(4).get('name')
+            sub=4
             self.ctx = await self.ctx.channel.send(content="loading...")
             em = await Embeds.reddit(subreddit=sub)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
@@ -295,7 +383,7 @@ class View_redditcategory(View):
         @discord.ui.button(label=settings.data.get('subreddits').get(5).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_5_{settings.data.get('subreddits').get(5).get('name')}")
         async def n5_button_callback(self, button, interaction):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
-            sub=settings.data.get('subreddits').get(5).get('name')
+            sub=5
             self.ctx = await self.ctx.channel.send(content="loading...")
             em = await Embeds.reddit(subreddit=sub)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
@@ -305,7 +393,7 @@ class View_redditcategory(View):
         @discord.ui.button(label=settings.data.get('subreddits').get(6).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_6_{settings.data.get('subreddits').get(6).get('name')}")
         async def n6_button_callback(self, button, interaction):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
-            sub=settings.data.get('subreddits').get(6).get('name')
+            sub=6
             self.ctx = await self.ctx.channel.send(content="loading...")
             em = await Embeds.reddit(subreddit=sub)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
@@ -315,7 +403,7 @@ class View_redditcategory(View):
         @discord.ui.button(label=settings.data.get('subreddits').get(7).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_7_{settings.data.get('subreddits').get(7).get('name')}")
         async def n7_button_callback(self, button, interaction):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
-            sub=settings.data.get('subreddits').get(7).get('name')
+            sub=7
             self.ctx = await self.ctx.channel.send(content="loading...")
             em = await Embeds.reddit(subreddit=sub)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
@@ -325,7 +413,7 @@ class View_redditcategory(View):
         @discord.ui.button(label=settings.data.get('subreddits').get(8).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_8_{settings.data.get('subreddits').get(8).get('name')}")
         async def n8_button_callback(self, button, interaction):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
-            sub=settings.data.get('subreddits').get(8).get('name')
+            sub=8
             self.ctx = await self.ctx.channel.send(content="loading...")
             em = await Embeds.reddit(subreddit=sub)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
@@ -335,7 +423,7 @@ class View_redditcategory(View):
         @discord.ui.button(label=settings.data.get('subreddits').get(9).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_9_{settings.data.get('subreddits').get(9).get('name')}")
         async def n9_button_callback(self, button, interaction):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
-            sub=settings.data.get('subreddits').get(9).get('name')
+            sub=9
             self.ctx = await self.ctx.channel.send(content="loading...")
             em = await Embeds.reddit(subreddit=sub)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
@@ -346,7 +434,7 @@ class View_redditcategory(View):
         @discord.ui.button(label=settings.data.get('subreddits').get(10).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_10_{settings.data.get('subreddits').get(10).get('name')}")
         async def n10_button_callback(self, button, interaction):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
-            sub = settings.data.get('subreddits').get(10).get('name')
+            sub = 10
             self.ctx = await self.ctx.channel.send(content="loading...")
             em = await Embeds.reddit(subreddit=sub)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
@@ -356,7 +444,7 @@ class View_redditcategory(View):
         @discord.ui.button(label=settings.data.get('subreddits').get(11).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_11_{settings.data.get('subreddits').get(11).get('name')}")
         async def n11_button_callback(self, button, interaction):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
-            sub = settings.data.get('subreddits').get(11).get('name')
+            sub = 11
             self.ctx = await self.ctx.channel.send(content="loading...")
             em = await Embeds.reddit(subreddit=sub)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
@@ -366,7 +454,7 @@ class View_redditcategory(View):
         @discord.ui.button(label=settings.data.get('subreddits').get(12).get('button_label'), style=discord.ButtonStyle.red, emoji="<:reddit:987690510481231942>", disabled=False, custom_id=f"reddit_12_{settings.data.get('subreddits').get(12).get('name')}")
         async def n12_button_callback(self, button, interaction):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
-            sub = settings.data.get('subreddits').get(12).get('name')
+            sub = 12
             self.ctx = await self.ctx.channel.send(content="loading...")
             em = await Embeds.reddit(subreddit=sub)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
@@ -378,7 +466,7 @@ class View_redditcategory(View):
                            custom_id=f"reddit_13_{settings.data.get('subreddits').get(13).get('name')}")
         async def n13_button_callback(self, button, interaction):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
-            sub = settings.data.get('subreddits').get(13).get('name')
+            sub = 13
             self.ctx = await self.ctx.channel.send(content="loading...")
             em = await Embeds.reddit(subreddit=sub)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
@@ -390,7 +478,7 @@ class View_redditcategory(View):
                            custom_id=f"reddit_14_{settings.data.get('subreddits').get(14).get('name')}")
         async def n14_button_callback(self, button, interaction):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
-            sub = settings.data.get('subreddits').get(14).get('name')
+            sub = 14
             self.ctx = await self.ctx.channel.send(content="loading...")
             em = await Embeds.reddit(subreddit=sub)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
@@ -402,7 +490,7 @@ class View_redditcategory(View):
                            custom_id=f"reddit_15_{settings.data.get('subreddits').get(15).get('name')}")
         async def n15_button_callback(self, button, interaction):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
-            sub = settings.data.get('subreddits').get(15).get('name')
+            sub = 15
             self.ctx = await self.ctx.channel.send(content="loading...")
             em = await Embeds.reddit(subreddit=sub)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)

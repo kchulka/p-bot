@@ -20,6 +20,7 @@ commands:
 
 subreddits:
   max: 6 #15 is the limit
+  max_posts: 150 #This value sets the number of post that would be saved
   #example:
   #   button label: "something" -- this is the text visible on the button
   #   name: "nudes" -- this is the name of the subreddit
