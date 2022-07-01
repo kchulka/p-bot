@@ -2,6 +2,11 @@
 # RENAME THIS FILE TO "settings.yml" !!!
 
 TOKEN: "..."
+bot_owners: # add your and/or your friends user id (should look like this: 123456789123456789), you can add as many users as you want (I recommend adding only people you trust)
+  - "user id here"
+  #- "user id here"
+  #- "user id here"
+
 reddit_login: # go to https://www.reddit.com/prefs/apps and create an app there
   client_id: "..."
   client_secret: "..."

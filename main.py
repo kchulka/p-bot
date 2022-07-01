@@ -18,6 +18,7 @@ import re
 import yaml
 from yaml import Loader
 
+import time
 from datetime import datetime
 #import asyncio
 
@@ -42,7 +43,8 @@ TOKEN = settings.data.get("TOKEN")
 reddit = praw.Reddit(
     client_id = settings.data.get("reddit_login").get("client_id"),
     client_secret = settings.data.get("reddit_login").get("client_secret"),
-    user_agent = settings.data.get("reddit_login").get("user_agent")
+    user_agent = settings.data.get("reddit_login").get("user_agent"),
+    check_for_async=False
 )
 
 """ ----- reddit save stuff ----- """
@@ -105,14 +107,30 @@ bot = discord.Bot(
     debug_guilds=[]
 )
 
+async def statuschange():
+    await bot.change_presence(activity=discord.Game(name=f"/{settings.data.get('commands').get('help')}"))
+
+async def botowner():
+    users = settings.data.get("bot_owners")
+    if debug >= 2:
+        print(f"Ids of bot owners: {users}")
+    for i in range(0, len(users)):
+        users[i] = int(users[i])
+    for user in users:
+        user = bot.get_user(user)
+        botownermessage = await user.send(content="Loading...")
+        vi = View_botowner(ctx=botownermessage, user=user, botownermessage=botownermessage)
+        em = Embeds.botowner()
+        await botownermessage.edit(content="Hello there!", embed=em, view=vi)
+        if debug >= 3:
+            print(f"bot owner message ctx: {botownermessage}")
+
 @bot.event
 async def on_ready():
     print(f"Bot has been logged in as {bot.user} \n"
           f"____________________________________\n")
     await statuschange()
-
-async def statuschange():
-    await bot.change_presence(activity=discord.Game(name=f"/{settings.data.get('commands').get('help')}"))
+    await botowner()
 
 """ ----- embeds ----- """
 
@@ -125,6 +143,26 @@ class Embeds():
             color=0xff0000
             )
         embed.set_thumbnail(url=settings.data.get('thumbnails').get('not-nsfw'))
+        return embed
+
+    def botowner(slef=None):
+        description= (
+            f"This is your bot and you can control some actions.\n"
+            f"\n"
+            f" **Reddit update:**\n"
+            f"ㅤㅤ- Use the button to manually regenerate Reddit save files.\n"
+            f"\n"
+            f" **Version info:**\n"
+            f"ㅤㅤ- Coming soon, you should check this link for newer versions:\n"
+            f"ㅤㅤ- [Github repository](https://github.com/kchulka/p-bot)\n"
+            f""
+        )
+        embed = discord.Embed(
+            title="Message for the bot owner!",
+            description=description,
+            color=0xff0000
+        )
+        embed.set_thumbnail(url=settings.data.get('thumbnails').get('other'))
         return embed
 
     def help(slef=None):
@@ -630,6 +668,78 @@ class View_random(View):
             except:
                 if debug >= 2:
                     print(f" message was deleted before timeout ")
+
+class View_botowner(View):
+    def __init__(self, ctx, user, botownermessage):
+        super().__init__(timeout=6969) #settings.data.get('commands').get('default-timeout')
+        self.ctx = ctx
+        self.user = user
+        self.botownermessage = botownermessage
+
+    @discord.ui.button(label="Reddit update", style=discord.ButtonStyle.blurple, emoji="<:reddit:987690510481231942>", disabled=False, custom_id="reddit_update")
+    async def reddit_update_callback(self, button, interaction):
+        button.disabled = True
+        await interaction.response.edit_message(view=self)
+
+        for max_subreddits in range(1, 1 + settings.data.get('subreddits').get("max")):
+            if debug >= 1:
+                print(f" creating file for subreddit num: {max_subreddits} ")
+
+            subreddit = settings.data.get('subreddits').get(max_subreddits).get('name')
+
+            sub = reddit.subreddit(subreddit)
+            hot = sub.hot(limit=settings.data.get('subreddits').get("max_posts"))
+
+            quantity = 0
+            dict_ = {}
+
+            for submission in hot:
+
+                check = r"(?:http\:|https\:)?\/\/.*\.(?:png|jpg)"
+                matches = re.search(check, submission.url, re.IGNORECASE)
+
+                if debug >= 2:
+                    print(f" random subreddit match: {matches} ")
+                if matches != None:
+                    quantity += 1
+                    dict1 = {
+                        quantity: {'id': f'{submission}', 'url': f'{submission.url}', 'title': f'{submission.title}',
+                                   'author': f'{submission.author}', 'score': submission.score}}
+                    if debug >= 2:
+                        print(f" submission: {submission} ")
+                    dict_.update(dict1)
+                else:
+                    if debug >= 2:
+                        print(f" random subreddit match: {matches} ")
+
+            current_time = {"time": datetime.now()}
+            dict_.update(current_time)
+
+            dict2 = {"quantity": quantity}
+            dict_.update(dict2)
+            if debug >= 1:
+                print(f"  submissions from sub {max_subreddits} that went thru: {quantity}")
+            with open(f'resources/reddit_saved_{max_subreddits}.yml', 'w') as yaml_file:
+                yaml.dump(dict_, yaml_file, default_flow_style=False)
+            print(f"  subreddit num: {max_subreddits} with name: {subreddit} hase been downloaded")
+
+        button.disabled = False
+        await self.botownermessage.edit(view=self)
+        await self.user.send(content="Database of Reddit pictures was updated.")
+
+    async def on_timeout(self):
+        try:
+            if debug >= 3:
+                print(f" botowner has timed out. ")
+            reddit_update = [x for x in self.children if x.custom_id == "reddit_update"][0]
+            reddit_update.disabled = True
+            await self.botownermessage.edit(view=self)
+
+            vi = View_botowner(ctx=self.ctx, user=self.user, botownermessage=self.botownermessage)
+            await self.botownermessage.edit(content="test1" ,view=vi)
+        except:
+            if debug >= 3:
+                print(f" message was deleted before timeout ")
 
 class View_help(View):
     def __init__(self, ctx):

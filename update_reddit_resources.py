@@ -29,7 +29,8 @@ if debug >= 1:
 reddit = praw.Reddit(
     client_id = settings.data.get("reddit_login").get("client_id"),
     client_secret = settings.data.get("reddit_login").get("client_secret"),
-    user_agent = settings.data.get("reddit_login").get("user_agent")
+    user_agent = settings.data.get("reddit_login").get("user_agent"),
+    check_for_async=False
 )
 
 """ ----- reddit save stuff ----- """
@@ -80,7 +81,6 @@ def save_from_reddit():
         with open(f'resources/reddit_saved_{max_subreddits}.yml', 'w') as yaml_file:
             yaml.dump(dict_, yaml_file, default_flow_style=False)
         print(f"  subreddit num: {max_subreddits} with name: {subreddit} hase been downloaded")
-
 
 save_from_reddit()
 
