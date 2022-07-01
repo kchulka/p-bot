@@ -19,6 +19,7 @@ commands:
   category: "pic-category"
 
 subreddits:
+  generate_on_start: False # (use True/False) this generates the files for the bot to use. I recommend to using CronTab to execute file reddit_save.py every few hours better then this
   max: 6 #15 is the limit
   max_posts: 150 #This value sets the number of post that would be saved
   #example:

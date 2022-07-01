@@ -51,6 +51,7 @@ class saved_reddit:
         self.file = open(f'resources/reddit_saved_{saved_reddit}.yml', 'r')
         self.data = yaml.load(self.file, Loader=Loader)
 
+
 def save_from_reddit():
     for max_subreddits in range (1, 1+settings.data.get('subreddits').get("max")):
         if debug >= 1:
@@ -59,7 +60,6 @@ def save_from_reddit():
         subreddit = settings.data.get('subreddits').get(max_subreddits).get('name')
 
         sub = reddit.subreddit(subreddit)
-        all_subs = []
         hot = sub.hot(limit=settings.data.get('subreddits').get("max_posts"))
 
         quantity = 0
@@ -89,7 +89,8 @@ def save_from_reddit():
         with open(f'resources/reddit_saved_{max_subreddits}.yml', 'w') as yaml_file:
             yaml.dump(dict_, yaml_file, default_flow_style=False)
 
-save_from_reddit()
+if settings.data.get('subreddits').get("generate_on_start") == True:
+    save_from_reddit()
 
 """ ----- BOT & INITIALIZATION ----- """
 
@@ -519,7 +520,7 @@ class View_reddit(View):
         await interaction.response.edit_message(content="", view=self)
 
 
-        self.ctx = await self.ctx.channel.send(content="loading...")
+        self.ctx = await interaction.followup.send(content="loading...")
         em = await Embeds.reddit(subreddit=self.sub)
         vi = View_reddit(ctx=self.ctx, subreddit=self.sub)
         await self.ctx.edit(content="", embed=em, view=vi)
@@ -651,10 +652,25 @@ class View_help(View):
 async def picrandom(ctx):
     if debug >= 1:
         print(f"random picture executed by: {ctx.author} ")
-    if ctx.channel.is_nsfw() == False:
-        em = Embeds.notnswfchannel()
-        await ctx.respond(embed=em, delete_after=10)
-    else:
+    try:
+        if ctx.channel.is_nsfw() == False:
+            em = Embeds.notnswfchannel()
+            await ctx.respond(embed=em, delete_after=10)
+        else:
+            x = random.choice(["fitom", "reddit"])
+            if debug >= 3:
+                print(f"random picture: {x} ")
+            if x == "reddit":
+                sub = "all"
+                await ctx.respond(content="loading...")
+                em = await Embeds.reddit(subreddit=sub)
+                vi = View_random(ctx=ctx)
+                await ctx.edit(content="", embed=em, view=vi)
+            elif x == "fitom":
+                em = Embeds.fitom_klasika()
+                vi = View_random(ctx)
+                await ctx.respond(embed=em, view=vi)
+    except:
         x = random.choice(["fitom", "reddit"])
         if debug >= 3:
             print(f"random picture: {x} ")
@@ -676,11 +692,16 @@ async def picrandom(ctx):
 async def piccategory(ctx):
     if debug >= 1:
         print(f"category picture executed by: {ctx.author} ")
-    if ctx.channel.is_nsfw() == False:
-        em = Embeds.notnswfchannel()
-        await ctx.respond(embed=em, delete_after=10)
+    try:
+        if ctx.channel.is_nsfw() == False:
+            em = Embeds.notnswfchannel()
+            await ctx.respond(embed=em, delete_after=10)
+        else:
+            vi = View_choosecategory(ctx)
+            em = Embeds.choose_category()
 
-    else:
+            await ctx.respond(content="", embed=em, view=vi)
+    except:
         vi = View_choosecategory(ctx)
         em = Embeds.choose_category()
 
