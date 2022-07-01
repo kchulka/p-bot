@@ -12,7 +12,7 @@ from yaml import Loader
 
 class settings:
     def __init__(self):
-        self.file = open('settings.yml', 'r')
+        self.file = open('resources/settings.yml', 'r')
         self.data = yaml.load(self.file, Loader=Loader)
 settings = settings()
 
