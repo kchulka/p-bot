@@ -3,6 +3,8 @@
 
 import praw
 
+import re
+
 import yaml
 from yaml import Loader
 
@@ -10,7 +12,7 @@ from yaml import Loader
 
 class settings:
     def __init__(self):
-        self.file = open('resources/settings.yml', 'r')
+        self.file = open('settings.yml', 'r')
         self.data = yaml.load(self.file, Loader=Loader)
 settings = settings()
 
@@ -68,7 +70,7 @@ def save_from_reddit():
         dict_.update(dict2)
         if debug >= 1:
             print(f"  submissions from sub {max_subreddits} that went thru: {quantity}")
-        with open(f'resources/reddit_saved_{max_subreddits}.yml', 'w') as yaml_file:
+        with open(f'reddit_saved_{max_subreddits}.yml', 'w') as yaml_file:
             yaml.dump(dict_, yaml_file, default_flow_style=False)
 
 save_from_reddit()
