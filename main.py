@@ -1,6 +1,8 @@
 
 print(f"The bot is starting up... \n")
 
+version = "v1.1.1"
+
 """ ----- The import stuff ----- """
 
 import discord
@@ -18,9 +20,10 @@ import re
 import yaml
 from yaml import Loader
 
+import requests
+
 import time
 from datetime import datetime
-#import asyncio
 
 """ ----- settings stuff ----- """
 
@@ -146,22 +149,30 @@ class Embeds():
         return embed
 
     def botowner(slef=None):
+        version_request = requests.get('https://api.github.com/repos/kchulka/p-bot/releases/latest')
+        version_json = version_request.json()
+
+        if version != version_json["tag_name"]:
+            version_message= f"Newer version {version_json['tag_name']} is available, download [**here**](https://github.com/kchulka/p-bot/releases/latest)."
+        else:
+            version_message = "You are using the latest version."
+
         description= (
             f"This is your bot and you can control some actions.\n"
             f"\n"
             f" **Reddit update:**\n"
             f"ㅤㅤ- Use the button to manually regenerate Reddit save files.\n"
             f"\n"
-            f" **Version info:**\n"
-            f"ㅤㅤ- Coming soon, you should check this link for newer versions:\n"
-            f"ㅤㅤ- [Github repository](https://github.com/kchulka/p-bot)\n"
-            f""
+            f" **Version {version}:**\n"
+            f"ㅤㅤ- {version_message}\n"
+            f"⠀⠀\n"
         )
         embed = discord.Embed(
             title="Message for the bot owner!",
             description=description,
             color=0xff0000
         )
+        embed.set_footer(text=f"If you have any issues or suggestions, feel free to contact me: {bot.get_user(324152796414869506)}")
         embed.set_thumbnail(url=settings.data.get('thumbnails').get('other'))
         return embed
 
@@ -188,7 +199,7 @@ class Embeds():
             color=0xff0000
             )
         embed.set_thumbnail(url=settings.data.get('thumbnails').get('other'))
-        embed.set_footer(text="Bot creator: Kchulka#4766")
+        embed.set_footer(text=f"Bot creator: {bot.get_user(324152796414869506)}")
         return embed
 
     def fitom_klasika(slef=None):
@@ -727,16 +738,36 @@ class View_botowner(View):
         await self.botownermessage.edit(view=self)
         await self.user.send(content="Database of Reddit pictures was updated.")
 
+    @discord.ui.button(label="Update check", style=discord.ButtonStyle.blurple, emoji="⤴", disabled=False, custom_id="check_update")
+    async def check_update_callback(self, button, interaction):
+        em = Embeds.botowner()
+        await interaction.response.edit_message(embed=em)
+
+        await self.user.send(content="Version succesfully checked.", delete_after=10)
+
+        """version_request = requests.get('https://api.github.com/repos/kchulka/p-bot/releases/latest')
+        version_json = version_request.json()
+
+        if version != version_json["tag_name"]:
+            version_message= f"Newer version {version_json['tag_name']} is available, download [**here**](https://github.com/kchulka/p-bot/releases/latest)."
+        else:
+            version_message = "You are using the latest version."
+            """
+
     async def on_timeout(self):
         try:
             if debug >= 3:
                 print(f" botowner has timed out. ")
             reddit_update = [x for x in self.children if x.custom_id == "reddit_update"][0]
             reddit_update.disabled = True
+
+            check_update = [x for x in self.children if x.custom_id == "check_update"][0]
+            check_update.disabled = True
+
             await self.botownermessage.edit(view=self)
 
             vi = View_botowner(ctx=self.ctx, user=self.user, botownermessage=self.botownermessage)
-            await self.botownermessage.edit(content="test1" ,view=vi)
+            await self.botownermessage.edit(view=vi)
         except:
             if debug >= 3:
                 print(f" message was deleted before timeout ")
