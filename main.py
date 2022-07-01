@@ -89,7 +89,7 @@ def save_from_reddit():
         with open(f'resources/reddit_saved_{max_subreddits}.yml', 'w') as yaml_file:
             yaml.dump(dict_, yaml_file, default_flow_style=False)
 
-if settings.data.get('subreddits').get("generate_on_start") == True:
+if settings.data.get('subreddits').get("update_resources_on_start") == True:
     save_from_reddit()
 
 """ ----- BOT & INITIALIZATION ----- """
