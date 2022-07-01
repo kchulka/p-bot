@@ -10,6 +10,8 @@ from yaml import Loader
 
 import time
 
+from datetime import datetime
+
 """ ----- settings stuff ----- """
 
 class settings:
@@ -67,6 +69,9 @@ def save_from_reddit():
             else:
                 if debug >= 2:
                     print(f" random subreddit match: {matches} ")
+
+        current_time = {"time": datetime.now()}
+        dict_.update(current_time)
 
         dict2 = {"quantity": quantity}
         dict_.update(dict2)
