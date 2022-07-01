@@ -88,6 +88,7 @@ def save_from_reddit():
             print(f"  submissions from sub {max_subreddits} that went thru: {quantity}")
         with open(f'resources/reddit_saved_{max_subreddits}.yml', 'w') as yaml_file:
             yaml.dump(dict_, yaml_file, default_flow_style=False)
+        print(f"  subreddit num: {max_subreddits} with name: {subreddit} hase been downloaded")
 
 if settings.data.get('subreddits').get("update_resources_on_start") == True:
     save_from_reddit()
