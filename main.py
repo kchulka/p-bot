@@ -682,7 +682,7 @@ class View_random(View):
 
 class View_botowner(View):
     def __init__(self, ctx, user, botownermessage):
-        super().__init__(timeout=6969) #settings.data.get('commands').get('default-timeout')
+        super().__init__(timeout=6969)
         self.ctx = ctx
         self.user = user
         self.botownermessage = botownermessage
