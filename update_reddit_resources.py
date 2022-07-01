@@ -8,6 +8,8 @@ import re
 import yaml
 from yaml import Loader
 
+import time
+
 """ ----- settings stuff ----- """
 
 class settings:
@@ -77,4 +79,5 @@ def save_from_reddit():
 
 save_from_reddit()
 
+time.sleep(3)
 exit("\nFinished saving reddit posts")
