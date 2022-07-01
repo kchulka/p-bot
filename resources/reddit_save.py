@@ -74,3 +74,5 @@ def save_from_reddit():
             yaml.dump(dict_, yaml_file, default_flow_style=False)
 
 save_from_reddit()
+
+exit("\nFinished saving reddit posts")
