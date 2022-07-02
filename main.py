@@ -1,7 +1,7 @@
 
 print(f"The bot is starting up... \n")
 
-version = "v1.1.1"
+version = "v1.2.0"
 
 """ ----- The import stuff ----- """
 
