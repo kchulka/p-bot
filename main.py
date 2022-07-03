@@ -34,7 +34,7 @@ from datetime import datetime
 
 class settings:
     def __init__(self):
-        self.file = open('resources/settings_proricharda.yml', 'r')
+        self.file = open('resources/settings.yml', 'r')
         self.data = yaml.load(self.file, Loader=Loader)
 settings = settings()
 
