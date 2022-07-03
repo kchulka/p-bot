@@ -34,7 +34,7 @@ from datetime import datetime
 
 class settings:
     def __init__(self):
-        self.file = open('resources/settings.yml', 'r')
+        self.file = open('resources/settings_proricharda.yml', 'r')
         self.data = yaml.load(self.file, Loader=Loader)
 settings = settings()
 
@@ -247,14 +247,19 @@ class Embeds():
             num +=1
 
         description += f"\n**Bot guilds**: \n"
-        num = 1
         for guild in bot.guilds:
+            num2=1
             get_guild = bot.get_guild(guild.id)
-            channel = get_guild.channels[1]
+            for i in range(100):
+                try:
+                    channel = get_guild.channels[i]
+                except:
+                    continue
+            #description += f"  - {get_guild.name}, \n"
             invitelink = await channel.create_invite(max_uses=0, max_age=0, unique=False, reason="data_collect")
-            if num == 1:
+            if num2 == 1:
                 description += f"  - {get_guild.name}: {invitelink} \n"
-            num +=1
+            num2 +=1
 
         embed = discord.Embed(
             title=title,
@@ -754,7 +759,7 @@ class View_random(View):
             await interaction.response.edit_message(content="", view=self)
 
             x = random.choice(["fitom", "reddit"])
-            self.ctx = await self.ctx.channel.send(content="loading...")
+            self.ctx = await interaction.followup.send(content="loading...")
             if x == "reddit":
                 sub="all"
                 em = await Embeds.reddit(subreddit=sub, ctx=interaction.user)
@@ -904,11 +909,11 @@ async def picrandom(ctx):
             if x == "reddit":
                 sub = "all"
                 await ctx.respond(content="loading...")
-                em = await Embeds.reddit(subreddit=sub)
+                em = await Embeds.reddit(subreddit=sub, ctx=ctx.user)
                 vi = View_random(ctx=ctx)
                 await ctx.edit(content="", embed=em, view=vi)
             elif x == "fitom":
-                em = await Embeds.fitom_klasika()
+                em = await Embeds.fitom_klasika(ctx=ctx.user)
                 vi = View_random(ctx)
                 await ctx.respond(embed=em, view=vi)
     except:
@@ -918,12 +923,12 @@ async def picrandom(ctx):
         if x == "reddit":
             sub="all"
             await ctx.respond(content="loading...")
-            em = await Embeds.reddit(subreddit=sub)
+            em = await Embeds.reddit(subreddit=sub, ctx=ctx.user)
             vi = View_random(ctx=ctx)
             await ctx.edit(content="", embed=em, view=vi)
         elif x == "fitom":
-            em = await Embeds.fitom_klasika()
-            vi = View_random(ctx)
+            em = await Embeds.fitom_klasika(ctx=ctx.user)
+            vi = View_random(ctx=ctx)
             await ctx.respond(embed=em, view=vi)
 
 @bot.command(
@@ -941,12 +946,12 @@ async def piccategory(ctx):
             vi = View_choosecategory(ctx)
             em = Embeds.choose_category()
 
-            await ctx.respond(content="", embed=em, view=vi)
+            await ctx.respond(embed=em, view=vi)
     except:
         vi = View_choosecategory(ctx)
         em = Embeds.choose_category()
 
-        await ctx.respond(content="", embed=em, view=vi)
+        await ctx.respond(embed=em, view=vi)
 
 
 @bot.command(
