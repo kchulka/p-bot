@@ -1,0 +1,56 @@
+#Paste the token of your bot inside the quotation marks. Get one here: https://discord.com/developers/applications
+TOKEN: ' '
+
+
+
+#Every bot owner gets a message when the bot starts containing some information about the bot and buttons, that can control some functions.
+#You can add as many users as you wish, but I recommend doing so only with people you trust.
+#You should paste ids of those users you want to add as owners inside the quotation marks. Id of a user should look like this: 123456789123456789
+bot_owners:
+  list:
+  - user id here
+  message_enabled: true
+
+
+
+#Reddit login details are required for most modules - nsfw, memes
+reddit_login: # go to https://www.reddit.com/prefs/apps and create an app there
+  client_id: '...'
+  client_secret: '...'
+  user_agent: p-bot   # anything could be here
+
+
+
+data_collect:
+# I collect some data about your bot mainly for statistical purposes. If you dont wish to share any of those data, feel free to edit the code.
+  #  amount: default / minimal            - With the minimal option I only get a message containing the bot id when the bot starts.
+  amount: default
+
+
+
+#These are modules of the bot. You can enable or disable them based on what do you want from your bot to do.
+#Configuration of those modules is separated into different config files in this directory
+  #module_name: enabled / disabled
+modules:
+  memes: enabled
+  nsfw: enabled
+  example: enabled
+
+
+
+defaults: #Here are the default settings, most of these can be different for each module
+  thumbnails:
+    default: https://images-ext-1.discordapp.net/external/dlwIsHmllAabNCL9Hi7FJ4Bu-j3p647NpIjUIYOinxg/https/pandahracky.cz/storage/2020/07/59506-150900.jpg?width=919&height=917
+    warning: https://i.pinimg.com/originals/c2/ea/1a/c2ea1a0d3e357245661a69cc83ec050a.jpg
+  commands:
+    enabled: true
+    help: help
+    info: info
+    reaction_timeout: 60
+  Status_change:
+    enabled: true
+  lang: en-UK.yml
+
+
+
+debug-mode: 0
