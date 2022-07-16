@@ -30,10 +30,8 @@ def config(regen=False, check=False, TOKEN=None,
            ):
 
     if regen == True:
-
-
-        #url = f'https://raw.githubusercontent.com/kchulka/p-bot/{version}/config/config.yml'
-        url = f"http://localhost:8000/config.yml"
+        version = yaml.load(open('resources/.version.yml', 'r')).get("version")
+        url = f'https://raw.githubusercontent.com/kchulka/p-bot/{version}/config/config.yml'
         config_request = requests.get(url, allow_redirects=True)
         open('config/config.yml', 'wb').write(config_request.content)
 

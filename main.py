@@ -38,7 +38,7 @@ yaml = YAML()
 class filebuilder:
     if os.path.exists("./file_builder.py") == False:
         print("Creating file_builder.py")
-        file_builder_py = requests.get("url = f'https://raw.githubusercontent.com/kchulka/p-bot/{version}/file_builder.py'", allow_redirects=True)
+        file_builder_py = requests.get(url=f'https://raw.githubusercontent.com/kchulka/p-bot/{version}/file_builder.py', allow_redirects=True)
         open('file_builder.py', 'wb').write(file_builder_py.content)
 import file_builder
 
