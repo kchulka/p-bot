@@ -132,7 +132,7 @@ if settings.data.get('subreddits').get("update_resources_on_start") == True:
 bot = discord.Bot(
     command_prefix="notused",
     intents=discord.Intents(members=True, messages=True, guilds=True),
-    debug_guilds=[]
+    debug_guilds=[],
 )
 
 async def statuschange():
@@ -952,7 +952,6 @@ async def piccategory(ctx):
         em = Embeds.choose_category()
 
         await ctx.respond(embed=em, view=vi)
-
 
 @bot.command(
     name=settings.data.get('commands').get('help'),
