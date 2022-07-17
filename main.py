@@ -11,7 +11,7 @@ import subprocess
 import pkg_resources
 
 class required_modules_manager:
-    required = {'ruamel.yaml', 'praw', "regex", "py-cord", "requests", "cryptography"}
+    required = {'ruamel.yaml', 'asyncpraw', "regex", "py-cord", "requests", "cryptography"}
     installed = {pkg.key for pkg in pkg_resources.working_set}
     missing = required - installed
 
@@ -108,7 +108,6 @@ class Embeds():
                 )
 
             if config.get('defaults').get('commands').get('enabled') == True:
-
                 embed.add_field(name=f"Default commands:", value=f"ㅤ`/help` - This is the command you just used \n"
                                                                  f"ㅤ`/info` - Some information about this project \n", inline=False)
 
@@ -228,7 +227,7 @@ if config.get('defaults').get('commands').get('enabled') == True:
 
 async def statuschange():
     if config.get('defaults').get('commands').get('enabled') == True:
-        await bot.change_presence(activity=discord.Game(f"Try /{config.get('defaults').get('commands').get('help')}"))
+        await bot.change_presence(activity=discord.Game(f"/{config.get('defaults').get('commands').get('help')}"))
     else:
         await bot.change_presence(activity=discord.Game(f"Hello There!"))
 

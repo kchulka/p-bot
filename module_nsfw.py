@@ -38,10 +38,11 @@ if nsfw_config.get('subreddits').get('enabled') == True:
     async def save_from_reddit():
         if debug >= 2:
             print(f"  Module nsfw has started saving files from reddit")
-        for subreddit in range (1, 1+nsfw_config.get('subreddits').get("max")):
-            if debug >= 3:
-                print(f"   Module nsfw creating file: {nsfw_config.get('subreddits').get(subreddit).get('name')} ({subreddit}/{nsfw_config.get('subreddits').get('max')})")
-            await update_reddit_resources.save_images_from_reddit(subreddit=nsfw_config.get('subreddits').get(subreddit).get('name'), filename=f"module_nsfw_{subreddit}", max_posts=nsfw_config.get('subreddits').get('max_posts'))
+        for subreddit_category in range (1, 1+nsfw_config.get('subreddits').get("max")):
+            for subreddit in nsfw_config.get('subreddits').get(subreddit_category).get('name'):
+                if debug >= 3:
+                    print(f"   Module nsfw creating file: {subreddit} ({subreddit_category}/{nsfw_config.get('subreddits').get('max')})")
+                await update_reddit_resources.save_images_from_reddit(subreddit=subreddit, filename=f"module_nsfw_{subreddit}", max_posts=nsfw_config.get('subreddits').get('max_posts'))
         print(f"  Module nsfw has ended saving files from reddit")
     save_from_reddit.start()
 
@@ -130,6 +131,8 @@ class Embeds():
             if debug >= 2:
                 print(f"  chosen subreddit: {subreddit} ")
 
+        subreddit = random.choice(nsfw_config.get('subreddits').get(subreddit).get('name'))
+
         subreddit_file = yaml.load(open(f'resources/module_nsfw_{subreddit}.yml', 'r', encoding='utf-8'))
 
         random_sub = random.randint(1, subreddit_file.get("quantity"))
@@ -146,8 +149,8 @@ class Embeds():
         description = (f"**Author**: [u/{author}](https://www.reddit.com/user/{author}) \n"
                        f"**Upvotes**: {score}"
                         )
-        description += f"\n**subreddit**: r/{nsfw_config.get('subreddits').get(subreddit).get('name')}"
-        post_url = f"https://www.reddit.com/r/{nsfw_config.get('subreddits').get(subreddit).get('name')}/comments/{id}/"
+        description += f"\n**subreddit**: r/{subreddit}"
+        post_url = f"https://www.reddit.com/r/{subreddit}/comments/{id}/"
         embed = discord.Embed(
                 title=title,
                 description=description,

@@ -13,56 +13,48 @@ commands:
 subreddits:
   enabled: True
   resources_refresh_rate: 120 # in minutes
-  max: 6 # 15 is the limit, sets the number buttons
-  max_posts: 150 #This value sets the number of post that would be saved
+  max: 8 # 24 is the limit, sets the number of choices
+  max_posts: 100 #This value sets the number of post that would be saved
   #example:
   #   button label: "something" - this is the text visible on the button
-  #   name: "nudes" - this is the name of the subreddit
+  #   name:
+  #   - "nudes" - this is the name of the subreddit, you can add more to the list
   1:
-    button_label: "NSFW"
-    name: "nsfw"
+    button_label: NSFW
+    name:
+      - "nsfw"
+      - "celebnsfw"
+      - "realgirls"
   2:
     button_label: "Nudes"
-    name: "nudes"
+    name:
+      - "nudes"
   3:
     button_label: "Pussy"
-    name: "pussy"
+    name:
+      - "pussy"
   4:
     button_label: "Ass"
-    name: "ass"
+    name:
+    - "ass"
   5:
-    button_label: "Too cute for porn"
-    name: "toocuteforporn"
+    button_label: "Boobs"
+    name:
+    - "boobs"
   6:
-    button_label: "Fit naked girls"
-    name: "fitnakedgirls"
+    button_label: "Too cute for porn"
+    name:
+      - "toocuteforporn"
   7:
-    button_label: " "
-    name: " "
+    button_label: "Fit naked girls"
+    name:
+      - "fitnakedgirls"
   8:
-    button_label: " "
-    name: " "
-  9:
-    button_label: " "
-    name: " "
-  10:
-    button_label: " "
-    name: " "
-  11:
-    button_label: " "
-    name: " "
-  12:
-    button_label: " "
-    name: " "
-  13:
-    button_label: " "
-    name: " "
-  14:
-    button_label: " "
-    name: " "
-  15:
-    button_label: " "
-    name: " "
+    button_label: "Asian"
+    name:
+      - "AsianHotties"
+      - "AsiansGoneWild"
+      - "AsianNSFW"
 
 fitom-klasika:
   enabled: False # True / False
