@@ -86,11 +86,10 @@ class Embeds():
 
     async def choosen_database(self=None, ctx=None, interaction=None, return_embed=False, categories=None, database=None):
             category = random.choice(categories)
-            print(category)
             if return_embed == False:
                 ctx = await interaction.followup.send(content="loading...")
             if database == "reddit":
-                em = await Embeds.reddit(subreddit=int(category))
+                em = await Embeds.reddit(subreddit=category)
             if database == "fitom-klasika":
                 em = await Embeds.fitom_klasika()
 
@@ -126,12 +125,12 @@ class Embeds():
         if debug >= 2:
             print(f"  chosen subreddit: {subreddit} ")
 
-        if subreddit == None:
+        if subreddit == "random":
             subreddit = random.randint(1, nsfw_config.get('subreddits').get('max'))
             if debug >= 2:
                 print(f"  chosen subreddit: {subreddit} ")
 
-        subreddit = random.choice(nsfw_config.get('subreddits').get(subreddit).get('name'))
+        subreddit = random.choice(nsfw_config.get('subreddits').get(int(subreddit)).get('name'))
 
         subreddit_file = yaml.load(open(f'resources/module_nsfw_{subreddit}.yml', 'r', encoding='utf-8'))
 
@@ -262,11 +261,11 @@ class View_category(View):
     async def save_to_dms_callback(self, button, interaction):
         vi = b.View_cancel_message(ctx=self.ctx)
         if interaction.user not in self.save_button_users:
-            await interaction.response.send_message(content="✅ Image has been saved to your DMs!", delete_after=15)
+            await interaction.response.send_message(content="✅ Image has been saved to your DMs!", delete_after=15, ephemeral=True)
             await interaction.user.send(content=" ", embeds=interaction.message.embeds, view=vi)
             self.save_button_users.append(interaction.user)
         else:
-            await interaction.response.send_message(content="❌ You have already saved this image!", delete_after=15)
+            await interaction.response.send_message(content="❌ You have already saved this image!", delete_after=15, ephemeral=True)
 
     @discord.ui.button(style=discord.ButtonStyle.red, emoji="↩", disabled=False)
     async def back_to_choose_callback(self, button, interaction):
@@ -313,11 +312,11 @@ class View_random(View):
     async def save_to_dms_callback(self, button, interaction):
         vi = b.View_cancel_message(ctx=self.ctx)
         if interaction.user not in self.save_button_users:
-            await interaction.response.send_message(content="✅ Image has been saved to your DMs!", delete_after=15)
+            await interaction.response.send_message(content="✅ Image has been saved to your DMs!", delete_after=15, ephemeral=True)
             await interaction.user.send(content=" ", embeds=interaction.message.embeds, view=vi)
             self.save_button_users.append(interaction.user)
         else:
-            await interaction.response.send_message(content="❌ You have already saved this image!", delete_after=15)
+            await interaction.response.send_message(content="❌ You have already saved this image!", delete_after=15, ephemeral=True)
 
     async def on_timeout(self):
         try:
