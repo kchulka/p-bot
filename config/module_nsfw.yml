@@ -1,0 +1,68 @@
+
+
+# The name shown in /help command
+module_name: NSFW
+
+commands:
+  reaction_timeout: 60
+  nsfw-random: nsfw-random
+  nsfw-random_description: "sends a random pornographic picture"
+  nsfw-category: nsfw-category
+  nsfw-category_description: "choose a category of pictures"
+
+subreddits:
+  enabled: True
+  resources_refresh_rate: 120 # in minutes
+  max: 6 # 15 is the limit, sets the number buttons
+  max_posts: 150 #This value sets the number of post that would be saved
+  #example:
+  #   button label: "something" - this is the text visible on the button
+  #   name: "nudes" - this is the name of the subreddit
+  1:
+    button_label: "NSFW"
+    name: "nsfw"
+  2:
+    button_label: "Nudes"
+    name: "nudes"
+  3:
+    button_label: "Pussy"
+    name: "pussy"
+  4:
+    button_label: "Ass"
+    name: "ass"
+  5:
+    button_label: "Too cute for porn"
+    name: "toocuteforporn"
+  6:
+    button_label: "Fit naked girls"
+    name: "fitnakedgirls"
+  7:
+    button_label: " "
+    name: " "
+  8:
+    button_label: " "
+    name: " "
+  9:
+    button_label: " "
+    name: " "
+  10:
+    button_label: " "
+    name: " "
+  11:
+    button_label: " "
+    name: " "
+  12:
+    button_label: " "
+    name: " "
+  13:
+    button_label: " "
+    name: " "
+  14:
+    button_label: " "
+    name: " "
+  15:
+    button_label: " "
+    name: " "
+
+fitom-klasika:
+  enabled: False # True / False
