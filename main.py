@@ -30,6 +30,7 @@ import importlib
 import aiohttp, asyncio
 from cryptography.fernet import Fernet
 from ruamel.yaml import YAML
+
 yaml = YAML()
 
 
@@ -45,6 +46,10 @@ import file_builder
 class initialization:
     with open("resources/.version.yml", 'w') as file:
         yaml.dump({"version": version}, file)
+
+    if os.path.exists("./bot.py") == False:
+        print("Making bot.py file")
+        file_builder.bot()
 
     if os.path.exists("./config/") == False:
         print("Making config folder")

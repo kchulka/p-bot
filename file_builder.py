@@ -71,7 +71,11 @@ def config(regen=False, check=False, TOKEN=None,
         with open("config/config.yml", 'w') as file:
             yaml.dump(new_config, file)
 
-
+def bot():
+    version = yaml.load(open('resources/.version.yml', 'r')).get("version")
+    url = f'https://raw.githubusercontent.com/kchulka/p-bot/{version}/bot.py'
+    config_request = requests.get(url, allow_redirects=True)
+    open('bot.py', 'wb').write(config_request.content)
 
 """
     jak se dostat k zasifrovanymu tokenu
