@@ -4,6 +4,7 @@ from discord import SlashCommandGroup
 from discord.ext import commands, tasks
 from discord.ui import Button, View
 from discord import Webhook
+from discord.commands import Option
 
 from ruamel.yaml import YAML
 yaml = YAML()
