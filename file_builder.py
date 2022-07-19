@@ -36,10 +36,14 @@ def config(regen=False, check=False, TOKEN=None,
         open('config/config.yml', 'wb').write(config_request.content)
 
     else:
-        if TOKEN != None:
+        new_config = yaml.load(open('config/config.yml', 'r'))
+
+        if TOKEN != None or new_config['TOKEN'] != ' ':
+            if new_config['TOKEN'] != ' ':
+                TOKEN = new_config['TOKEN']
             token_change(TOKEN)
 
-        new_config = yaml.load(open('config/config.yml', 'r'))
+
         new_config['TOKEN'] = ' '
 
         if bot_owners_list != None:
