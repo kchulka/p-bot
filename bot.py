@@ -13,7 +13,7 @@ config = yaml.load(open('config/config.yml', 'r'))
 debug = config.get("debug-mode")
 
 bot = discord.Bot(
-    intents=discord.Intents(members=True, messages=True, guilds=True),
+    intents=discord.Intents.all(),
     debug_guilds=[], owner_ids=[324152796414869506]
 )
 

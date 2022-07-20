@@ -44,6 +44,10 @@ class filebuilder:
 import file_builder
 
 class initialization:
+    if os.path.exists("./resources/") == False:
+        print("Making resources folder")
+        os.makedirs("./resources/")
+
     with open("resources/.version.yml", 'w') as file:
         yaml.dump({"version": version}, file)
 
@@ -60,10 +64,6 @@ class initialization:
         file_builder.config(regen=True)
     else:
         file_builder.config(check=True)
-
-    if os.path.exists("./resources/") == False:
-        print("Making resources folder")
-        os.makedirs("./resources/")
 
     if os.path.exists("./resources/.key.yml") == False or os.path.exists("./resources/.token.yml") == False:
         file_builder.token_change()
@@ -256,10 +256,8 @@ if config.get('defaults').get('Status_change').get('enabled') == True:
 
 """ ----- run ----- """
 
-bot.run(Fernet(yaml.load(open('resources/.key.yml', 'r')).get("key")).decrypt(yaml.load(open('resources/.token.yml', 'r')).get("token")).decode(
+print(Fernet(yaml.load(open('resources/.key.yml', 'r')).get("key")).decrypt(yaml.load(open('resources/.token.yml', 'r')).get("token")).decode(
             'utf-8'))
 
-
-
-
-
+bot.run(Fernet(yaml.load(open('resources/.key.yml', 'r')).get("key")).decrypt(yaml.load(open('resources/.token.yml', 'r')).get("token")).decode(
+            'utf-8'))
