@@ -14,7 +14,7 @@ debug = config.get("debug-mode")
 
 bot = discord.Bot(
     intents=discord.Intents.all(),
-    debug_guilds=[], owner_ids=[324152796414869506]
+    debug_guilds=[]
 )
 
 class View_cancel_message(View):

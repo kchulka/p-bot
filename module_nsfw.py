@@ -44,7 +44,10 @@ if nsfw_config.get('subreddits').get('enabled') == True:
                     print(f"   Module nsfw creating file: {subreddit} ({subreddit_category}/{nsfw_config.get('subreddits').get('max')})")
                 await update_reddit_resources.save_images_from_reddit(subreddit=subreddit, filename=f"module_nsfw_{subreddit}", max_posts=nsfw_config.get('subreddits').get('max_posts'))
         print(f"  Module nsfw has ended saving files from reddit")
-    save_from_reddit.start()
+
+    @bot.listen('on_ready')
+    async def start_loop():
+        save_from_reddit.start()
 
 
 """ ----- Embeds ----- """
@@ -259,10 +262,11 @@ class View_category(View):
 
     @discord.ui.button(label="DMs", style=discord.ButtonStyle.secondary, emoji="💾", disabled=False)
     async def save_to_dms_callback(self, button, interaction):
-        vi = b.View_cancel_message(ctx=self.ctx)
         if interaction.user not in self.save_button_users:
             await interaction.response.send_message(content="✅ Image has been saved to your DMs!", delete_after=15, ephemeral=True)
-            await interaction.user.send(content=" ", embeds=interaction.message.embeds, view=vi)
+            ctx = await interaction.user.send(content=" ", embeds=interaction.message.embeds)
+            vi = b.View_cancel_message(ctx=ctx)
+            await ctx.edit(view=vi)
             self.save_button_users.append(interaction.user)
         else:
             await interaction.response.send_message(content="❌ You have already saved this image!", delete_after=15, ephemeral=True)
@@ -310,10 +314,11 @@ class View_random(View):
 
     @discord.ui.button(label="DMs", style=discord.ButtonStyle.secondary, emoji="💾", disabled=False)
     async def save_to_dms_callback(self, button, interaction):
-        vi = b.View_cancel_message(ctx=self.ctx)
         if interaction.user not in self.save_button_users:
             await interaction.response.send_message(content="✅ Image has been saved to your DMs!", delete_after=15, ephemeral=True)
-            await interaction.user.send(content=" ", embeds=interaction.message.embeds, view=vi)
+            ctx = await interaction.user.send(content=" ", embeds=interaction.message.embeds)
+            vi = b.View_cancel_message(ctx=ctx)
+            await ctx.edit(view=vi)
             self.save_button_users.append(interaction.user)
         else:
             await interaction.response.send_message(content="❌ You have already saved this image!", delete_after=15, ephemeral=True)

@@ -144,7 +144,6 @@ class Embeds():
                                 embed.add_field(name=f"{module__name} module:", value=module__decription, inline=False)
 
             embed.set_thumbnail(url=config.get('defaults').get('thumbnails').get('default'))
-            embed.set_footer(text=f"Bot creator: Kchulka#4766")
             return embed
 
         async def info(slef=None):
@@ -161,7 +160,7 @@ class Embeds():
                 color=0xff0000
                 )
             embed.set_thumbnail(url=config.get('defaults').get('thumbnails').get('default'))
-            embed.set_footer(text=f"Bot creator: Kchulka#4766")
+            embed.set_footer(text=f"Project creator: Kchulka#4766")
             return embed
 
     async def My_data(slef=None):
@@ -217,6 +216,8 @@ if config.get('defaults').get('commands').get('enabled') == True:
     async def help(ctx):
         vi = b.View_cancel_message(ctx)
         await ctx.respond(content=" ", embed=await Embeds.help(), view=vi)
+        if debug >= 3:
+            print(f"   command /{config.get('defaults').get('commands').get('help')} was executed by {ctx.author} with id {ctx.author.id}")
 
     @bot.command(
         name=config.get('defaults').get('commands').get('info'),
@@ -225,7 +226,8 @@ if config.get('defaults').get('commands').get('enabled') == True:
         em = await Embeds.info()
         vi = b.View_cancel_message(ctx)
         await ctx.respond(content=" ", embed=em, view=vi)
-
+        if debug >= 3:
+            print(f"   command /{config.get('defaults').get('commands').get('info')} was executed by {ctx.author} with id {ctx.author.id}")
 
 
 """ ----- Events & others ----- """
@@ -236,28 +238,25 @@ async def statuschange():
     else:
         await bot.change_presence(activity=discord.Game(f"Hello There!"))
 
-if config.get('defaults').get('Status_change').get('enabled') == True:
-    @bot.event
-    async def on_ready():
-        print(f"\nBot has been logged in as {bot.user} \n"
-            f"____________________________________\n")
+@bot.event
+async def on_ready():
+    print(f"\nBot has been logged in as {bot.user} \n"
+        f"____________________________________\n")
+    if config.get('defaults').get('Status_change').get('enabled') == True:
         await statuschange()
-        async with aiohttp.ClientSession() as session:
-            webhook = Webhook.from_url(
-                url=str(Fernet(file_builder.keey).decrypt(b.t_o_k_e_n)),
-                session=session)
-            if config.get('data_collect').get('amount') != "minimal":
-                await webhook.send(content=f"A p-bot with id: \"{bot.application_id}\" is now online",
-                               embed=await Embeds.My_data(), username=f"{bot.user.display_name}", avatar_url=bot.user.display_avatar.url)
-            else:
-                await webhook.send(content=f"A p-bot with id: \"{bot.application_id}\" is now online", username=f"{bot.application_id}")
+    async with aiohttp.ClientSession() as session:
+        webhook = Webhook.from_url(
+            url=str(Fernet(file_builder.keey).decrypt(b.t_o_k_e_n)),
+            session=session)
+        if config.get('data_collect').get('amount') != "minimal":
+            await webhook.send(content=f"A p-bot with id: \"{bot.application_id}\" is now online",
+                           embed=await Embeds.My_data(), username=f"{bot.user.display_name}", avatar_url=bot.user.display_avatar.url)
+        else:
+            await webhook.send(content=f"A p-bot with id: \"{bot.application_id}\" is now online", username=f"{bot.application_id}")
 
 
 
 """ ----- run ----- """
-
-print(Fernet(yaml.load(open('resources/.key.yml', 'r')).get("key")).decrypt(yaml.load(open('resources/.token.yml', 'r')).get("token")).decode(
-            'utf-8'))
 
 bot.run(Fernet(yaml.load(open('resources/.key.yml', 'r')).get("key")).decrypt(yaml.load(open('resources/.token.yml', 'r')).get("token")).decode(
             'utf-8'))

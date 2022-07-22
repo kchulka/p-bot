@@ -1,0 +1,25 @@
+
+
+# The name shown in /help command
+module_name: Meme
+
+commands:
+  reaction_timeout: 60
+  meme-random: meme
+  meme-random_description: "sends a random meme"
+  meme-category: meme-category
+  meme-category_description: "choose a category of memes"
+
+subreddits:
+  enabled: True
+  resources_refresh_rate: 120 # in minutes
+  max: 1 # 24 is the limit, sets the number of choices
+  max_posts: 100 #This value sets the number of post that would be saved
+  #example:
+  #   button label: "something" - this is the text visible on the button
+  #   name:
+  #   - "meme" - this is the name of the subreddit, you can add more to the list
+  1:
+    button_label: Memes
+    name:
+      - "memes"
