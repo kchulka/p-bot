@@ -13,8 +13,8 @@ commands:
 subreddits:
   enabled: True
   resources_refresh_rate: 120 # in minutes
-  max: 1 # 24 is the limit, sets the number of choices
-  max_posts: 100 #This value sets the number of post that would be saved
+  max: 10 # 24 is the limit, sets the number of choices
+  max_posts: 70 #This value sets the number of post that would be saved
   #example:
   #   button label: "something" - this is the text visible on the button
   #   name:
@@ -23,3 +23,50 @@ subreddits:
     button_label: Memes
     name:
       - "memes"
+  2:
+    button_label: Meme Economy
+    name:
+      - "MemeEconomy"
+  3:
+    button_label: Me IRL
+    name:
+      - "me_irl"
+  4:
+    button_label: Facepalm
+    name:
+      - "facepalm"
+  5:
+    button_label: Surreal
+    name:
+      - "surrealmemes"
+  6:
+    button_label: Black People Twitter
+    name:
+      - "BlackPeopleTwitter"
+  7:
+    button_label: Wholesome Memes
+    name:
+      - "wholesomememes"
+  8:
+    button_label: 4chan
+    nsfw: True
+    name:
+      - "greentext"
+  9:
+    button_label: Prequel Memes
+    name:
+      - "PrequelMemes"
+  10:
+    button_label: Sequel Memes
+    name:
+      - "SequelMemes"
+
+
+
+
+
+
+
+
+
+

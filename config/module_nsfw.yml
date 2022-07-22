@@ -14,7 +14,7 @@ subreddits:
   enabled: True
   resources_refresh_rate: 120 # in minutes
   max: 8 # 24 is the limit, sets the number of choices
-  max_posts: 100 #This value sets the number of post that would be saved
+  max_posts: 70 #This value sets the number of post that would be saved
   #example:
   #   button label: "something" - this is the text visible on the button
   #   name:

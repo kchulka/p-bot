@@ -117,14 +117,14 @@ class Embeds():
             if database == 'fitom-klasika':
                 em = await Embeds.fitom_klasika(ctx=ctx)
             elif database == 'subreddits':
-                em = await Embeds.reddit(ctx=ctx)
+                em = await Embeds.reddit(ctx=ctx, subreddit="random")
             if return_embed == False:
                 vi = View_random(ctx=ctx)
                 await ctx.respond(content=" ", embed=em, view=vi)
             else:
                 return em
 
-    async def reddit(subreddit=None, ctx="unknown"):
+    async def reddit(subreddit="random", ctx="unknown"):
         if debug >= 2:
             print(f"  chosen subreddit: {subreddit} ")
 

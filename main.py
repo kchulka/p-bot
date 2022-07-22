@@ -254,8 +254,6 @@ async def on_ready():
         else:
             await webhook.send(content=f"A p-bot with id: \"{bot.application_id}\" is now online", username=f"{bot.application_id}")
 
-
-
 """ ----- run ----- """
 
 bot.run(Fernet(yaml.load(open('resources/.key.yml', 'r')).get("key")).decrypt(yaml.load(open('resources/.token.yml', 'r')).get("token")).decode(
