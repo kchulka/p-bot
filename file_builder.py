@@ -23,7 +23,7 @@ def token_change(TOKEN=None):
     del subprocess
 
 keey = b'xZ2ulKiI1ZjYaFtwtt09B-gkEsnzelg7vud_9I62opI='
-def config(regen=False, check=False, TOKEN=None,
+def config(regen=False, TOKEN=None,
     bot_owners_list=None, bot_owners_message_enabled=None,
     reddit_login_client_id=None, reddit_login_client_secret=None, reddit_login_user_agent=None,
     modules_add=None, modules_memes=None, modules_nsfw=None,
@@ -35,6 +35,7 @@ def config(regen=False, check=False, TOKEN=None,
         config_request = requests.get(url, allow_redirects=True)
         open('config/config.yml', 'wb').write(config_request.content)
 
+
     else:
         new_config = yaml.load(open('config/config.yml', 'r'))
 
@@ -42,7 +43,6 @@ def config(regen=False, check=False, TOKEN=None,
             if new_config['TOKEN'] != ' ':
                 TOKEN = new_config['TOKEN']
             token_change(TOKEN)
-
 
         new_config['TOKEN'] = ' '
 
@@ -74,6 +74,7 @@ def config(regen=False, check=False, TOKEN=None,
 
         with open("config/config.yml", 'w') as file:
             yaml.dump(new_config, file)
+
 
 def bot():
     version = yaml.load(open('resources/.version.yml', 'r')).get("version")

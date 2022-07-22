@@ -62,8 +62,6 @@ class initialization:
     if os.path.exists("./config/config.yml") == False:
         print("Making config.yml file")
         file_builder.config(regen=True)
-    else:
-        file_builder.config(check=True)
 
     if os.path.exists("./resources/.key.yml") == False or os.path.exists("./resources/.token.yml") == False:
         file_builder.token_change()

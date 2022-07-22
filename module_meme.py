@@ -92,7 +92,7 @@ class Embeds():
             if return_embed == False:
                 ctx = await interaction.followup.send(content="loading...")
             if database == "reddit":
-                em = await Embeds.reddit(subreddit=category)
+                em = await Embeds.reddit(subreddit=category, ctx=ctx)
 
             if return_embed == True:
                 return em
@@ -126,6 +126,8 @@ class Embeds():
             subreddit = random.randint(1, meme_config.get('subreddits').get('max'))
             if debug >= 2:
                 print(f"  chosen subreddit: {subreddit} ")
+
+
 
         subreddit = random.choice(meme_config.get('subreddits').get(int(subreddit)).get('name'))
 

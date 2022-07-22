@@ -13,7 +13,7 @@ commands:
 subreddits:
   enabled: True
   resources_refresh_rate: 120 # in minutes
-  max: 10 # 24 is the limit, sets the number of choices
+  max: 9 # 24 is the limit, sets the number of choices
   max_posts: 70 #This value sets the number of post that would be saved
   #example:
   #   button label: "something" - this is the text visible on the button
@@ -48,15 +48,10 @@ subreddits:
     name:
       - "wholesomememes"
   8:
-    button_label: 4chan
-    nsfw: True
-    name:
-      - "greentext"
-  9:
     button_label: Prequel Memes
     name:
       - "PrequelMemes"
-  10:
+  9:
     button_label: Sequel Memes
     name:
       - "SequelMemes"
