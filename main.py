@@ -84,13 +84,22 @@ Webhook = b.Webhook
 
 """ ----- Importing bot modules ----- """
 
+official_modules = ["meme", "nsfw"]
+
 for module in config.get("modules"):
     if config.get("modules").get(module) == "enabled":
         if os.path.exists(f"module_{module}.py") == True:
             print("Importing module from config:", module)
             importlib.import_module(f"module_{module}")
         else:
-            print(f'File for module: "{module}" was not found')
+            if module in official_modules:
+                print(f"Downloading mission official module: {module}")
+                download_module = requests.get(
+                    url=f'https://raw.githubusercontent.com/kchulka/p-bot/{version}/module_{module}.py',
+                    allow_redirects=True)
+                open('module_{module}.py', 'wb').write(download_module.content)
+            else:
+                print(f'File for module: "{module}" was not found')
 
 
 
